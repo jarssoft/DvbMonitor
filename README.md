@@ -1,9 +1,9 @@
 # DvbMonitor
 
-A small software for monitoring teletext, EPG and other part of DVB Trasport Stream.
+Extract teletext, EPG and other from MPEG Trasport Stream.
 
-- Teletext with many special data
-- View multichannel subtitles like a chat. (For Finnish Broadcast Company Yle)
+- Monitoring teletext with many special data. (Monitor-class)
+- View teletext subtitles from multiple tv-channel like a chat. (SubtitleMonitor-class)
 - TODO: EPG
 
 ## Installation
@@ -18,7 +18,7 @@ Make 'zapping'. For example run the dvb-zap from dvb-tools. You need to use -P t
 dvbv5-zap -c channels-v5.conf -r 'Yle TV1' -P
 </pre>
 
-Then make a pipe where the trasport stream sends as standard input:
+Then make a pipe and put trasport stream as standard input:
 
 <pre>
 cat /dev/dvb/adapter0/dvr0 |java SubtitleMonitor
@@ -28,4 +28,10 @@ Or use dvbsnoop to get certain PID:
 
 <pre>
 dvbsnoop -s ts -nph -n 100000000 -b 5010 |java Monitor
+</pre>
+
+Or from file:
+
+<pre>
+cat koe.ts |java SubtitleMonitor
 </pre>
