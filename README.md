@@ -38,4 +38,4 @@ cat koe.ts |java Monitor
 
 ## SubtitleMonitor
 
-Here is example of reading teletext subtitle from multiple television channel.
+Here is example of reading teletext subtitle from multiple television channel:
