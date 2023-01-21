@@ -8,7 +8,7 @@ Extract teletext and other stuff from MPEG Trasport Stream.
 
 ## Installation
 
-DvbMonitor runs on Java Runtime Environment on the Linux system. To receive television signal as Transport Stream you needs also the device and software for tuning.
+DvbMonitor runs on Java Runtime Environment on the Linux system. To receive television signal as Transport Stream you need the device and software for tuning.
 
 ## Using
 
@@ -24,7 +24,7 @@ Then use /dev/dvb/adapter0/dvr0 as standard input:
 cat /dev/dvb/adapter0/dvr0 |java Monitor
 </pre>
 
-Or use dvbsnoop to get only one PID:
+Or use [dvbsnoop](https://dvbsnoop.sourceforge.net/) to get only one PID:
 
 <pre>
 dvbsnoop -s ts -b 5000 |java Monitor
@@ -38,6 +38,6 @@ cat koe.ts |java Monitor
 
 ## SubtitleMonitor
 
-Here is example of reading teletext subtitle from multiple television channel:
+Here is example of reading teletext subtitle from multiple television channel.
 
 ![Kuvakaappaus2023-01-17 10-17-39](https://user-images.githubusercontent.com/24640011/213861529-63afb220-b341-4f4c-9413-e7e0f0ac1dfb.png)
