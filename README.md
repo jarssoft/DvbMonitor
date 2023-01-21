@@ -1,9 +1,9 @@
 # DvbMonitor
 
-Extract teletext, EPG and other from MPEG Trasport Stream.
+Extract teletext and other stuff from MPEG Trasport Stream.
 
 - Monitoring teletext with many special data. (Monitor-class)
-- View teletext subtitles from multiple tv-channel like a chat. (SubtitleMonitor-class)
+- View teletext subtitles like a chat. (SubtitleMonitor-class)
 - TODO: EPG
 
 ## Installation
@@ -12,26 +12,30 @@ DvbMonitor runs on Java Runtime Environment on the Linux system. To receive tele
 
 ## Using
 
-Make 'zapping'. For example run the dvb-zap from dvb-tools. You need to use -P to get all PIDs of the stream.
+Make 'zapping'. For example run the dvb-zap from dvb-tools. You need to use -P to get all PIDs of the stream. For example:
 
 <pre>
-dvbv5-zap -c channels-v5.conf -r 'Yle TV1' -P
+dvbv5-zap -c channels-v5.conf 610000000 -P
 </pre>
 
-Then make a pipe and put trasport stream as standard input:
+Then use /dev/dvb/adapter0/dvr0 as standard input:
 
 <pre>
-cat /dev/dvb/adapter0/dvr0 |java SubtitleMonitor
+cat /dev/dvb/adapter0/dvr0 |java Monitor
 </pre>
 
-Or use dvbsnoop to get certain PID:
+Or use dvbsnoop to get only one PID:
 
 <pre>
-dvbsnoop -s ts -nph -n 100000000 -b 5010 |java Monitor
+dvbsnoop -s ts -b 5000 |java Monitor
 </pre>
 
-Or from file:
+Or get transport stream from file:
 
 <pre>
-cat koe.ts |java SubtitleMonitor
+cat koe.ts |java Monitor
 </pre>
+
+## SubtitleMonitor
+
+Here is example of reading teletext subtitle from multiple television channel.
