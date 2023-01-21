@@ -15,7 +15,7 @@ DvbMonitor runs on Java Runtime Environment on the Linux system. To receive tele
 Make 'zapping'. For example run the dvb-zap from dvb-tools. You need to use -P to get all PIDs of the stream. For example:
 
 <pre>
-dvbv5-zap -c channels-v5.conf 610000000 -P
+dvbv5-zap -c channels-v5.conf 610000000 -P 
 </pre>
 
 Then use /dev/dvb/adapter0/dvr0 as standard input:
