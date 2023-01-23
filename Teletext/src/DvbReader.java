@@ -1,12 +1,13 @@
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /** Reads Transport Stream. */
 public class DvbReader {
 
-	final private static int TS_PACKET_SIZE = 188;
-	final private static int HEADER_SIZE = 4;
-	final private static int PAYLOAD_SIZE = TS_PACKET_SIZE - HEADER_SIZE;
+	final public static int TS_PACKET_SIZE = 188;
+	final public static int HEADER_SIZE = 4;
+	final public static int PAYLOAD_SIZE = TS_PACKET_SIZE - HEADER_SIZE;
 
 	private static int currentPID = 0;
 
@@ -15,14 +16,25 @@ public class DvbReader {
 		return currentPID;
 	}
 
+	private static int dataleft=0;
+	  
+	public static int getDataleft() {
+		return dataleft;
+	}
+
 	/** Read byte-buffer. Return true if succeed, otherwise false. */
 	public static boolean read(byte[] buffer) {
+		
+		assert(buffer.length > 0): "buffer.length must be greater than zero, but buffer.length = " + buffer.length;
+		
 		try {
+			dataleft -= buffer.length;
 			return System.in.read(buffer) > 0;
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
-		}	  
+		}
+		
 	}
 
 	/** Returns hexadecimal presentation of byte-buffer @buffer. */
@@ -40,6 +52,7 @@ public class DvbReader {
 	
 	/** Read next id.*/
 	public static boolean readId() {
+
 		return read(bufferId);
 	}
 
@@ -68,18 +81,23 @@ public class DvbReader {
 	 *  thats PID founds on array @pidfilter.*/  
 	public static int seekPid(final int[] pidfilter) {
 
+		assert(dataleft==0): "dataleft must be zero, but dataleft = " + dataleft;
+		
 		while(true) {
-
+			
+			dataleft = DvbReader.TS_PACKET_SIZE;
+			
 			if(!readId()) {
 				return 0;
 			}	
 			
-			if(hasSyncByte()){
+			if(hasSyncByte()){	
 				
 				currentPID = getPid();
 				
 				if(contains(pidfilter, currentPID)) {
 					//System.out.println(getIdAsHex() + " (pid=" + pid + ")");
+					
 					break;
 				}
 			}
@@ -124,6 +142,23 @@ public class DvbReader {
 		
 	}
 
-
+	public static boolean readLeft() {
+		
+		if(dataleft==0) {
+			return true;
+		}
+		
+		assert(dataleft >= 0): "dataleft must be zero or positive, but dataleft = " + dataleft;
+		assert(dataleft < TS_PACKET_SIZE);
+		
+		byte[] left = new byte[dataleft];
+		boolean ok= read(left);
+		
+		String s = new String(left, StandardCharsets.UTF_8);
+		System.out.println(SubtitleMonitor.ANSI_LRED+s+SubtitleMonitor.ANSI_RESET);
+		
+		return ok;
+		
+	}
 
 }
