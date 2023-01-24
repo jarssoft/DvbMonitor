@@ -155,7 +155,7 @@ public class DvbReader {
 		boolean ok= read(left);
 		
 		String s = new String(left, StandardCharsets.UTF_8);
-		System.out.println(SubtitleMonitor.ANSI_LRED+s+SubtitleMonitor.ANSI_RESET);
+		System.out.println((left[0]!=0xFF ? SubtitleMonitor.ANSI_LRED : "")+s+SubtitleMonitor.ANSI_RESET);
 		
 		return ok;
 		

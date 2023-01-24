@@ -30,6 +30,7 @@ public class EPGReader {
   final private static int EVENT_HEADER_SIZE = 12;
   final private static int DESCRIPTOR_TAG_AND_LENGHT_SIZE = 2;
   final private static int DATA_SIZE = DvbReader.PAYLOAD_SIZE - PREFIX_SIZE - EVENT_HEADER_SIZE; //40-8;
+  final private static int CRC_SIZE = 4;
   
   private final static int epgpids[] = {0x12};
   
@@ -43,35 +44,46 @@ public class EPGReader {
 
 	  if(dLenght==0) {	  
 		  
-		  if(!readPrefix()) {
-			  return false;
-		  }
-		  
-		  System.out.println("-----------------");
-		  System.out.println(getPrefixAsHex());
-		  
-		  //if(section_length<=0) {
-		  if(bufferPrefix[0]==0) {
+		  //if(dlLenght<=0) {
+		  //if(section_length <= 27+EVENT_HEADER_SIZE){
 
-			  if(!readEventHeader()) {
+			  if(!readPrefix()) {
 				  return false;
 			  }
+			  
+			  System.out.println("  "+section_length+": ");
+			  System.out.println("--- Section --------------------------------");
+			  
+			  System.out.println(getPrefixAsHex());
 
 			  int table_id = getTableID();
-			  System.out.print(table_id + "   ");
-	
 			  section_length = getSectionLenght();
-			  System.out.println(section_length);
-	
-			  dlLenght = getDescriptorLoopLenght();
-			  System.out.println(getEventHeaderAsHex()+" "+dlLenght);
-
+			  
+		  //}
+		  //System.out.println(table_id + "   " + section_length);
+		  //}
+		  
+		  //if(section_length<=0) {
+					  
+		  int ti=bufferPrefix[1];	  
+		  if(bufferPrefix[0]==0 && (ti==0x4e || ti==0x4f 
+				  || (ti & 0xF0)==0x50 || (ti & 0xF0)==0x60)) {
+			  nextEvent();
 		  }
+		  
 	  }
-	  
-	  section_length -= DvbReader.TS_PACKET_SIZE;
 
 	  return true;
+  }
+  
+  private static void nextEvent() {
+	  
+	  //assert(DvbReader.getDataleft()>=2);
+	  //assert(readCRC());
+	  
+	  assert(readEventHeader());
+	  dlLenght = getDescriptorLoopLenght();
+	  System.out.println("  "+section_length + ": " + getEventHeaderAsHex());
   }
 
   /**********************/
@@ -160,6 +172,11 @@ public class EPGReader {
   }
 
   /*********************/
+  private static byte[] bufferCRC = new byte[CRC_SIZE];
+  
+  private static boolean readCRC() {
+	  return DvbReader.read(bufferCRC);
+  }
   
   private static int dLenght = 0;
   private static int dlLenght = 0;
@@ -168,6 +185,7 @@ public class EPGReader {
 
 	  assert(DvbReader.HEADER_SIZE + PREFIX_SIZE + EVENT_HEADER_SIZE + DATA_SIZE == DvbReader.TS_PACKET_SIZE);
 
+	  // TS loop
 	  while (true) {
 
 		  assert(readPacket());
@@ -184,19 +202,32 @@ public class EPGReader {
 
 		  if(bufferPrefix[0]==0 || dLenght>0) {
 
-			  //while(readDescriptorTL()) {
-			  while (true) {
+			  // Descriptor loop
+			  do {
 
 				  // Starting to read new descriptor.
 				  if(dLenght==0) {
 
+					  if(dlLenght==0) {
+						  //No enough data left in packet.
+						  if(DvbReader.getDataleft() <= EVENT_HEADER_SIZE + 1) {
+							  break;
+						  }
+						  nextEvent();
+						  section_length -= EVENT_HEADER_SIZE;
+						  assert(dlLenght>=2):"dlLenght must be >=2. dlLenght="+dlLenght;
+					  }
+					  assert(dlLenght>=2):"dlLenght must be >=2. dlLenght="+dlLenght;
+					  
 					  assert(readDescriptorTL());					  
 					  
-					  System.out.print(dlLenght+" "+getDescriptorTLAsHex()+"  ");
+					  System.out.print("    "+dlLenght+": "+getDescriptorTLAsHex()+"  ");
 					  dlLenght-=DESCRIPTOR_TAG_AND_LENGHT_SIZE;
+					  section_length -= DESCRIPTOR_TAG_AND_LENGHT_SIZE;
 					  
 					  if(getDescriptorTag()==0x4d || getDescriptorTag()==0x54 
-							  || getDescriptorTag()==0x55) {
+							  || getDescriptorTag()==0x55
+							  || (getDescriptorTag() & 0xF0) == 0x50) {
 						  
 					  } else {
 						  //short_event_desc = 0x4D
@@ -205,13 +236,13 @@ public class EPGReader {
 	
 						  //assert(getDescriptorLenght()<=DvbReader.getDataleft());
 					  
-						  break;
+						  //break;
 					  }
 
 					  dLenght = getDescriptorLenght();
 
 				  }
-
+				  
 				  assert(dLenght>0);
 				  //assert(DvbReader.getDataleft()>0);
 				  
@@ -220,28 +251,33 @@ public class EPGReader {
 					  bufferData = new byte[DvbReader.getDataleft()];
 				  }else {
 					  bufferData = new byte[dLenght];
-				  }				  
+				  }
+				  
 				  dLenght -= bufferData.length;
 				  dlLenght -= bufferData.length;
+				  section_length -= bufferData.length;
+				  ///assert(dlLenght>=0);
 				  
 				  // Print data of descriptor.
 				  if(DvbReader.getDataleft()>0) {
 					  assert(readData());
 				  }
 				  System.out.print(getDataAsText());
+				  
+				  //Descriptor continues on next packet
 				  if(dLenght>0) {
 					  System.out.print("[new packet]");
 					  break;
 				  }
-				  if(DvbReader.getDataleft()<2) {
-					  break;
-				  }
 				  
 				  System.out.println();
-			  }
+				  
+			  } while(DvbReader.getDataleft() >= 2 && section_length > 27);
 		  }
+
 		  assert(DvbReader.readLeft());
+		  
 	  }
-   }
-  
+  }
+
 }
