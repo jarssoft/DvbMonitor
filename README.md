@@ -4,7 +4,7 @@ Extract teletext and other stuff from MPEG Trasport Stream.
 
 - Monitoring teletext with many special data. (Monitor-class)
 - View teletext subtitles like a chat. (SubtitleMonitor-class)
-- TODO: EPG
+- Reads EPG initially
 
 ## Installation
 
