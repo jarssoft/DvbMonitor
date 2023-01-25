@@ -1,3 +1,4 @@
+import java.io.IOException;import javax.xml.stream.events.StartDocument;
 
 public class EPGReader {
 
@@ -29,48 +30,101 @@ public class EPGReader {
   final private static int PREFIX_SIZE = 6+8+1;
   final private static int EVENT_HEADER_SIZE = 12;
   final private static int DESCRIPTOR_TAG_AND_LENGHT_SIZE = 2;
-  final private static int DATA_SIZE = DvbReader.PAYLOAD_SIZE - PREFIX_SIZE - EVENT_HEADER_SIZE; //40-8;
+  final private static int DATA_SIZE = DvbReader.PAYLOAD_SIZE - PREFIX_SIZE - EVENT_HEADER_SIZE;
   final private static int CRC_SIZE = 4;
   
   private final static int epgpids[] = {0x12};
   
-  private static int section_length = 0;
+  private static int section_length = 27;
 
-  public static boolean readPacket() {
+	
+  /** Read byte-buffer, which exists in two packet. 
+   * Return true if succeed, otherwise false. */
+  public static boolean readFromPackets(byte[] buffer) {
 
-	  if(DvbReader.seekPid(epgpids) == 0) {
-		  return false;
+	  int dataleft = DvbReader.getDataleft();
+	  int extension = buffer.length - dataleft;
+
+	  if(extension>0) {
+		  
+		  if(extension==buffer.length) {
+			  assert(nextPacket());
+			  return DvbReader.read(buffer);
+		  }else {
+		  
+			  byte[] start = new byte[dataleft];
+			  assert(DvbReader.read(start));
+			  
+			  //Changes the packet between reading.
+			  assert(nextPacket());
+			  
+			  byte[] end = new byte[extension];
+			  assert(DvbReader.read(end));
+			  
+			  assert(start.length + end.length == buffer.length);
+			  assert(dataleft + extension == buffer.length);
+			  
+			  System.arraycopy(start, 0, buffer, 0, dataleft);
+			  System.arraycopy(end, 0, buffer, dataleft, extension);
+			  System.out.println("Multipacket buffer!");
+			  
+			  return true;
+		  }
+		  
+	  }else {
+		  
+		  return DvbReader.read(buffer);
+		  
 	  }
 
-	  if(dLenght==0) {	  
-		  
+  }
+	
+  public static boolean nextPacket() {
+	  System.out.println("\n----[new packet]-----");
+	  
+	  if(DvbReader.seekPid(epgpids) == 0) {		  
+		  return false;
+	  }
+	  return true;
+  }
+  
+  public static boolean readPacket() {
+
+	  assert(nextPacket());
+
+	  //if(eventLenght==0) {
+
+	  if(descLenght==0) {
+
 		  //if(dlLenght<=0) {
-		  //if(section_length <= 27+EVENT_HEADER_SIZE){
+		  if(section_length == 27) { //<= 27+EVENT_HEADER_SIZE){
 
 			  if(!readPrefix()) {
 				  return false;
 			  }
-			  
-			  System.out.println("  "+section_length+": ");
-			  System.out.println("--- Section --------------------------------");
-			  
-			  System.out.println(getPrefixAsHex());
 
-			  int table_id = getTableID();
-			  section_length = getSectionLenght();
-			  
-		  //}
-		  //System.out.println(table_id + "   " + section_length);
-		  //}
-		  
-		  //if(section_length<=0) {
-					  
-		  int ti=bufferPrefix[1];	  
-		  if(bufferPrefix[0]==0 && (ti==0x4e || ti==0x4f 
-				  || (ti & 0xF0)==0x50 || (ti & 0xF0)==0x60)) {
-			  nextEvent();
+			  //System.out.println("  e"+eventLenght);
+			  System.out.println("  s"+section_length);
+
+			  System.out.println("Section: "+getPrefixAsHex());
+
+			  //}
+			  //System.out.println(table_id + "   " + section_length);
+			  //}
+
+			  //if(section_length<=0) {
+
+			  int ti=bufferPrefix[1];	  
+			  if(bufferPrefix[0]==0 && (ti==0x4e || ti==0x4f 
+					  || (ti & 0xF0)==0x50 || (ti & 0xF0)==0x60)
+					  && getSectionLenght()>27
+					  ) {
+				  section_length = getSectionLenght();
+				  nextEvent();
+			  }
+
 		  }
-		  
+
 	  }
 
 	  return true;
@@ -82,8 +136,10 @@ public class EPGReader {
 	  //assert(readCRC());
 	  
 	  assert(readEventHeader());
-	  dlLenght = getDescriptorLoopLenght();
-	  System.out.println("  "+section_length + ": " + getEventHeaderAsHex());
+	  eventLenght = getDescriptorLoopLenght();	  
+	  System.out.println("  Event: (s" + section_length + ") " + getEventHeaderAsHex());
+	  assert((bufferEventHeader[2] & 0xFF) == 0xEA): "Error in EventHeader.";
+	  
   }
 
   /**********************/
@@ -113,8 +169,10 @@ public class EPGReader {
 
   private static byte[] bufferEventHeader = new byte[EVENT_HEADER_SIZE];
 
+
+	
   public static boolean readEventHeader() {
-	  return DvbReader.read(bufferEventHeader);
+	  return readFromPackets(bufferEventHeader);
   }
 
   public static String getEventHeaderAsHex() {
@@ -138,7 +196,7 @@ public class EPGReader {
   private static byte[] bufferDescriptorTL = new byte[DESCRIPTOR_TAG_AND_LENGHT_SIZE];
 
   public static boolean readDescriptorTL() {
-	  return DvbReader.read(bufferDescriptorTL);
+	  return readFromPackets(bufferDescriptorTL);
   }
 
   public static String getDescriptorTLAsHex() {
@@ -178,8 +236,8 @@ public class EPGReader {
 	  return DvbReader.read(bufferCRC);
   }
   
-  private static int dLenght = 0;
-  private static int dlLenght = 0;
+  private static int descLenght = 0;
+  private static int eventLenght = 0;
 
   public static void main(String[] args) {
 
@@ -188,7 +246,15 @@ public class EPGReader {
 	  // TS loop
 	  while (true) {
 
-		  assert(readPacket());
+		  do {
+			  assert(readPacket());
+			  if(bufferPrefix[0]==0 && section_length>27) {				  
+				  break;
+			  }else {
+				  assert(DvbReader.readLeft());
+			  }
+		  } while(true);
+
 
 		  //StringBuilder result = new StringBuilder();
 
@@ -200,29 +266,30 @@ public class EPGReader {
 
 		  //result.append(getDataAsText()); 	      
 
-		  if(bufferPrefix[0]==0 || dLenght>0) {
+		  if(bufferPrefix[0]==0 || descLenght>0) {
 
 			  // Descriptor loop
 			  do {
 
 				  // Starting to read new descriptor.
-				  if(dLenght==0) {
+				  if(descLenght==0) {
 
-					  if(dlLenght==0) {
+					  if(eventLenght==0) {
 						  //No enough data left in packet.
+						  /*
 						  if(DvbReader.getDataleft() <= EVENT_HEADER_SIZE + 1) {
 							  break;
-						  }
+						  }*/
 						  nextEvent();
 						  section_length -= EVENT_HEADER_SIZE;
-						  assert(dlLenght>=2):"dlLenght must be >=2. dlLenght="+dlLenght;
+						  assert(eventLenght>=2):"eventLenght must be >=2. eventLenght="+eventLenght;
 					  }
-					  assert(dlLenght>=2):"dlLenght must be >=2. dlLenght="+dlLenght;
 					  
+					  assert(eventLenght>=2):"eventLenght must be >=2. eventLenght="+eventLenght;
 					  assert(readDescriptorTL());					  
 					  
-					  System.out.print("    "+dlLenght+": "+getDescriptorTLAsHex()+"  ");
-					  dlLenght-=DESCRIPTOR_TAG_AND_LENGHT_SIZE;
+					  System.out.print("    Desc: (e"+eventLenght+") "+getDescriptorTLAsHex()+"  ");
+					  eventLenght -= DESCRIPTOR_TAG_AND_LENGHT_SIZE;
 					  section_length -= DESCRIPTOR_TAG_AND_LENGHT_SIZE;
 					  
 					  if(getDescriptorTag()==0x4d || getDescriptorTag()==0x54 
@@ -239,22 +306,22 @@ public class EPGReader {
 						  //break;
 					  }
 
-					  dLenght = getDescriptorLenght();
+					  descLenght = getDescriptorLenght();
 
 				  }
 				  
-				  assert(dLenght>0);
+				  assert(descLenght>0);
 				  //assert(DvbReader.getDataleft()>0);
 				  
 				  // Section continues in next packet.
-				  if(dLenght > DvbReader.getDataleft()) {
+				  if(descLenght > DvbReader.getDataleft()) {
 					  bufferData = new byte[DvbReader.getDataleft()];
 				  }else {
-					  bufferData = new byte[dLenght];
+					  bufferData = new byte[descLenght];
 				  }
 				  
-				  dLenght -= bufferData.length;
-				  dlLenght -= bufferData.length;
+				  descLenght -= bufferData.length;
+				  eventLenght -= bufferData.length;
 				  section_length -= bufferData.length;
 				  ///assert(dlLenght>=0);
 				  
@@ -262,22 +329,17 @@ public class EPGReader {
 				  if(DvbReader.getDataleft()>0) {
 					  assert(readData());
 				  }
-				  System.out.print(getDataAsText());
+				  System.out.println(getDataAsText());
 				  
-				  //Descriptor continues on next packet
-				  if(dLenght>0) {
-					  System.out.print("[new packet]");
+				  // Descriptor continues on next packet
+				  if(descLenght>0) {
 					  break;
 				  }
 				  
-				  System.out.println();
-				  
-			  } while(DvbReader.getDataleft() >= 2 && section_length > 27);
+			  } while(DvbReader.getDataleft() >= 0 && section_length > 27);
 		  }
 
 		  assert(DvbReader.readLeft());
-		  
 	  }
   }
-
 }

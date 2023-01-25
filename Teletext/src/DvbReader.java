@@ -26,6 +26,7 @@ public class DvbReader {
 	public static boolean read(byte[] buffer) {
 		
 		assert(buffer.length > 0): "buffer.length must be greater than zero, but buffer.length = " + buffer.length;
+		assert(buffer.length <= getDataleft()): "No enought data in this packet. getDataleft() = "+getDataleft();
 		
 		try {
 			dataleft -= buffer.length;
@@ -36,6 +37,7 @@ public class DvbReader {
 		}
 		
 	}
+
 
 	/** Returns hexadecimal presentation of byte-buffer @buffer. */
 	public static String byteBuffertoHex(byte[] buffer) {
