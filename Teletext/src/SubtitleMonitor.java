@@ -1,5 +1,7 @@
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 
 public class SubtitleMonitor {
 
@@ -14,7 +16,6 @@ public class SubtitleMonitor {
 	public static final String ANSI_PURPLE = "\u001B[35m";
 	public static final String ANSI_CYAN = "\u001B[36m";
 	public static final String ANSI_WHITE = "\u001B[37m";
-	
 	public static final String ANSI_GRAY = "\u001B[37m";
 	public static final String ANSI_LRED = "\u001B[91m";
 	public static final String ANSI_LGREEN = "\u001B[92m";
@@ -25,7 +26,13 @@ public class SubtitleMonitor {
 	
 	public static final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("HH:mm");
 	
+	static String linecache_content[] = new String[40];
+	static int linecache_index[] = {0, 0, 0, 0};
+	static LocalDateTime linecache_time[] = new LocalDateTime[4];
+	
 	public static void main(String[] args) {
+		
+		int lastWriteId=0;
 		
 		/** Filter for current programs. */
 		ChangeMonitor.followedPackets[320] = 0b01000001000001000000000000000000;		
@@ -66,25 +73,55 @@ public class SubtitleMonitor {
 				return;
 			}
 
-			String channels = "";
+			String[] channels = {
+					ANSI_LYELLOW + "***",
+					ANSI_LBLUE + "<TV1>",
+					ANSI_LMAGENTA + "<TV2>",
+					ANSI_WHITE + "<Teema & Fem>"
+					};
+			
+			int id=0;
 
-			if(lc.page == 320) {
-				channels = ANSI_LYELLOW + "***";
-			}
-			if(lc.page == 333 || lc.page == 771 || lc.page == 451 || lc.page == 455) {
-				channels = ANSI_LBLUE + "<TV1>";
+			if(lc.page == 333 || lc.page == 771 || lc.page == 451 || lc.page == 455) {				
+				id=1;
 			}
 			if(lc.page == 334 || lc.page == 772 || lc.page == 452 || lc.page == 456) {
-				channels = ANSI_LMAGENTA + "<TV2>";
+				id=2;
 			}
 			if(lc.page == 336 || lc.page == 773 || lc.page == 453 || lc.page == 457) {
-				channels = ANSI_WHITE + "<Teema & Fem>";
+				id=3;
 			}
 		
-			LocalDateTime date = LocalDateTime.now();
+			//LocalDateTime date = LocalDateTime.now();			
+			//System.out.println(ANSI_WHITE + date.format(dateFormat) + " " + channels[id] + lc.content);
 			
-			System.out.println(ANSI_WHITE + date.format(dateFormat) + " " + channels + lc.content);
-							
+			LocalDateTime date = LocalDateTime.now();		
+			if(linecache_index[id] == 0) {
+				linecache_time[id] = date;
+			}
+			
+			linecache_content[id * 10 + linecache_index[id]++] = lc.content;			
+			
+			if(linecache_index[id]>8 || 
+					(Math.abs(linecache_time[id].until(date, ChronoUnit.SECONDS)) > 3 
+							&& linecache_index[id]>0)) {
+				
+				if(id!=lastWriteId) {
+					System.out.println(ANSI_WHITE + date.format(dateFormat) + 
+							" " + channels[id]);
+				}
+				
+				for(int i=0;i<linecache_index[id];i++) {
+					System.out.println(linecache_content[id*10+i]);
+				}
+				
+				linecache_index[id]=0;
+				lastWriteId=id;
+				
+			}
+			
+			
+				
 		}
 		
 	}
