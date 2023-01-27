@@ -21,6 +21,10 @@ public class DvbReader {
 	public static int getDataleft() {
 		return dataleft;
 	}
+	
+	public static void reduceDataleft(int dl) {
+		dataleft -= dl;
+	}
 
 	/** Read byte-buffer. Return true if succeed, otherwise false. */
 	public static boolean read(byte[] buffer) {
@@ -37,7 +41,6 @@ public class DvbReader {
 		}
 		
 	}
-
 
 	/** Returns hexadecimal presentation of byte-buffer @buffer. */
 	public static String byteBuffertoHex(byte[] buffer) {

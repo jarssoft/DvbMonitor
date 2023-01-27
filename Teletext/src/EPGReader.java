@@ -1,4 +1,4 @@
-import java.io.IOException;import javax.xml.stream.events.StartDocument;
+import java.io.IOException;
 
 public class EPGReader {
 
@@ -12,14 +12,7 @@ public class EPGReader {
 		char c = (char)aByte;
 
 		if(isAsciiPrintable(c)) {
-			if(c =='￤') {return 'ä';}
-			else if(c =='[') {return 'Ä';}
-			else if(c =='}') {return 'å';}
-			else if(c ==']') {return 'Å';}
-			else if(c =='|') {return 'ö';}
-			else if(c =='\\'){return 'Ö';}
-			else if(c =='~') {return 'ü';} 
-			else {return c;}
+			return c;
 		}else{
 			return '*';
 		}
@@ -45,36 +38,32 @@ public class EPGReader {
 	  int dataleft = DvbReader.getDataleft();
 	  int extension = buffer.length - dataleft;
 
-	  if(extension>0) {
+	  try {
+
+		  if(dataleft>buffer.length) {
+			  dataleft=buffer.length;
+		  }
+
+		  int read = System.in.read(buffer, 0, dataleft);
 		  
-		  if(extension==buffer.length) {
-			  assert(nextPacket());
-			  return DvbReader.read(buffer);
-		  }else {
-		  
-			  byte[] start = new byte[dataleft];
-			  assert(DvbReader.read(start));
-			  
+		  DvbReader.reduceDataleft(dataleft);
+
+		  if(extension>0) {
 			  //Changes the packet between reading.
 			  assert(nextPacket());
-			  
-			  byte[] end = new byte[extension];
-			  assert(DvbReader.read(end));
-			  
-			  assert(start.length + end.length == buffer.length);
-			  assert(dataleft + extension == buffer.length);
-			  
-			  System.arraycopy(start, 0, buffer, 0, dataleft);
-			  System.arraycopy(end, 0, buffer, dataleft, extension);
-			  System.out.println("Multipacket buffer!");
-			  
-			  return true;
+
+			  assert(read + System.in.read(buffer, dataleft, extension) == buffer.length);
+
+			  DvbReader.reduceDataleft(extension);
 		  }
-		  
-	  }else {
-		  
-		  return DvbReader.read(buffer);
-		  
+
+		  return true;
+
+	  } catch (IOException e) {
+
+		  e.printStackTrace();
+		  return false;
+
 	  }
 
   }
