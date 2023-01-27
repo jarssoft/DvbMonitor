@@ -3,11 +3,11 @@
 */
 public class LineChange {
 
-	String newline;	
+	String content;	
 	int page;
 	
 	public LineChange(String aNewline, int aPage) {
-		newline=aNewline;
+		content=aNewline;
 		page=aPage;
 	}
 	

@@ -73,7 +73,7 @@ public class ChangeMonitor {
 				return;
 			}
 			
-			System.out.println(String.format("%04d", lc.page) + "> " + lc.newline);
+			System.out.println(String.format("%04d", lc.page) + "> " + lc.content);
 			
 		}
 		

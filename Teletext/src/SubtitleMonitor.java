@@ -1,10 +1,43 @@
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 
 public class SubtitleMonitor {
 
+	public static class LineCache{
+		
+		public String content[] = new String[15];
+		
+		public int index = 0;
+		
+		public LocalDateTime time = LocalDateTime.now();
+		
+		public void add(String content) {
+			assert(index<content.length()):"LineCache is full.";
+
+			time=LocalDateTime.now();
+			
+			if(!phraseEnds(content)) {
+				time=time.plusSeconds(8);
+			}else {
+				if(index<7) {
+					time=time.plusSeconds(2);
+				}
+			}
+				
+			this.content[index++] = content;
+		}
+		
+		public void clear() {
+			index=0;
+		}
+		
+	}
+	
+	public static boolean phraseEnds(String phrase) {
+		return phrase.contains(".") || phrase.contains("?") || phrase.contains("!");
+	}
+	
 	/** Constants for coloring text. */
 	
 	public static final String ANSI_RESET = "\u001B[0m";
@@ -23,16 +56,24 @@ public class SubtitleMonitor {
 	public static final String ANSI_LBLUE = "\u001B[94m";
 	public static final String ANSI_LMAGENTA = "\u001B[95m";
 	public static final String ANSI_LCYAN = "\u001B[97m";
-	
-	public static final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("HH:mm");
-	
-	static String linecache_content[] = new String[40];
-	static int linecache_index[] = {0, 0, 0, 0};
-	static LocalDateTime linecache_time[] = new LocalDateTime[4];
+
+
+	public static final String[] channels = {
+			ANSI_LYELLOW + "***",
+			ANSI_LBLUE + "<TV1",
+			ANSI_LMAGENTA + "<TV2",
+			ANSI_WHITE + "<Teema"
+			};
 	
 	public static void main(String[] args) {
 		
-		int lastWriteId=0;
+		
+		final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("HH:mm");
+		
+		LineCache caches[] = {new LineCache(), new LineCache(), new LineCache(), new LineCache()};
+		
+		String programnames[] = {"---", "---", "---", "---"};
+		
 		
 		/** Filter for current programs. */
 		ChangeMonitor.followedPackets[320] = 0b01000001000001000000000000000000;		
@@ -64,65 +105,71 @@ public class SubtitleMonitor {
 		followedPackets[457] = subtextFilter;
 		 */	
 
+		
+		
 		/** Checks only followed packets */
 		while (true) {
 			
 			LineChange lc = ChangeMonitor.readChange();
+			LocalDateTime date = LocalDateTime.now();
 			
 			if(lc==null) {
 				return;
 			}
-
-			String[] channels = {
-					ANSI_LYELLOW + "***",
-					ANSI_LBLUE + "<TV1>",
-					ANSI_LMAGENTA + "<TV2>",
-					ANSI_WHITE + "<Teema & Fem>"
-					};
 			
-			int id=0;
-
-			if(lc.page == 333 || lc.page == 771 || lc.page == 451 || lc.page == 455) {				
-				id=1;
-			}
-			if(lc.page == 334 || lc.page == 772 || lc.page == 452 || lc.page == 456) {
-				id=2;
-			}
-			if(lc.page == 336 || lc.page == 773 || lc.page == 453 || lc.page == 457) {
-				id=3;
-			}
-		
-			//LocalDateTime date = LocalDateTime.now();			
-			//System.out.println(ANSI_WHITE + date.format(dateFormat) + " " + channels[id] + lc.content);
-			
-			LocalDateTime date = LocalDateTime.now();		
-			if(linecache_index[id] == 0) {
-				linecache_time[id] = date;
-			}
-			
-			linecache_content[id * 10 + linecache_index[id]++] = lc.content;			
-			
-			if(linecache_index[id]>8 || 
-					(Math.abs(linecache_time[id].until(date, ChronoUnit.SECONDS)) > 3 
-							&& linecache_index[id]>0)) {
-				
-				if(id!=lastWriteId) {
-					System.out.println(ANSI_WHITE + date.format(dateFormat) + 
-							" " + channels[id]);
+			{
+				int id=0;
+	
+				if(lc.page == 333 || lc.page == 771 || lc.page == 451 || lc.page == 455) {				
+					id=1;
+				}
+				if(lc.page == 334 || lc.page == 772 || lc.page == 452 || lc.page == 456) {
+					id=2;
+				}
+				if(lc.page == 336 || lc.page == 773 || lc.page == 453 || lc.page == 457) {
+					id=3;
 				}
 				
-				for(int i=0;i<linecache_index[id];i++) {
-					System.out.println(linecache_content[id*10+i]);
+				if(lc.page == 320) {
+					if(lc.content.contains("TV1")) {
+						programnames[1] = lc.content.substring(14, lc.content.length()).trim();
+					}
+					if(lc.content.contains("TV2")) {
+						programnames[2] = lc.content.substring(14, lc.content.length()).trim();
+					}
+					if(lc.content.contains("Teema")) {
+						programnames[3] = lc.content.substring(14, lc.content.length()).trim();
+					}
 				}
+			
+				//System.out.println(ANSI_WHITE + date.format(dateFormat) + " " + channels[id] + lc.content);
 				
-				linecache_index[id]=0;
-				lastWriteId=id;
+				caches[id].add(lc.content);
 				
 			}
-			
-			
-				
-		}
+								
+			for(int id: new int[]{0, 1, 2, 3}) {
+
+				if(caches[id].index >= 10 || 
+						(caches[id].time.until(date, ChronoUnit.SECONDS) >= 0 
+						&& caches[id].index>0)) {
+
+					System.out.println(ANSI_WHITE + //date.format(dateFormat) + 
+							"   " + channels[id] + " / " + programnames[id] + ">" 
+							//+ ANSI_GRAY + date.format(dateFormat) 
+							+ ANSI_RESET);
+					
+					for(int i=0;i<caches[id].index;i++) {
+						System.out.println("    "+caches[id].content[i]);
+					}
+					
+					caches[id].clear();
+					System.out.println();
+				}
+
+			}
+	
+		}		
 		
 	}
 	

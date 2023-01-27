@@ -21,21 +21,14 @@ public class TeletextReader {
   	char c = (char)(Integer.reverse(aByte & 0b11111110) >> 24);
 
   	if(isAsciiPrintable(c)) {
-  		if(c =='{') {
-  			return 'ä';
-    	}else if(c =='[') {
-    		return 'Ä';
-    	}else if(c =='}') {
-    		return 'å';
-    	}else if(c ==']') {
-    		return 'Å';
-    	}else if(c =='|') {
-    		return 'ö';
-    	}else if(c =='\\') { 
-    		return 'Ö';
-    	}else {
-    		return c;
-    	}
+  		if(c =='{') {return 'ä';}
+    	else if(c =='[') {return 'Ä';}
+    	else if(c =='}') {return 'å';}
+    	else if(c ==']') {return 'Å';}
+    	else if(c =='|') {return 'ö';}
+    	else if(c =='\\'){return 'Ö';}
+    	else if(c =='~') {return 'ü';}
+    	else {return c;}
   	}else{
   		return ' ';
   	}
