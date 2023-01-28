@@ -30,55 +30,56 @@ public class EPGReader {
   
   private static int section_length = 27;
 
-	
   /** Read byte-buffer, which exists in two packet. 
    * Return true if succeed, otherwise false. */
-  public static boolean readFromPackets(byte[] buffer) {
+  public static boolean readFromPackets(byte[] buffer, int start) {
 
-	  int dataleft = DvbReader.getDataleft();
-	  int extension = buffer.length - dataleft;
-
+	  final int toRead = buffer.length - start;
+	  final int packetDataLeft = DvbReader.getDataleft();
+	  final int readNow = Math.min(toRead, packetDataLeft);
+	  
+	  //System.out.println("\n >readFromPackets(" + buffer.length + ", " + start + ", " + readNow + ")");
+	  
 	  try {
 
-		  if(dataleft>buffer.length) {
-			  dataleft=buffer.length;
-		  }
-
-		  int read = System.in.read(buffer, 0, dataleft);
+		  assert(System.in.read(buffer, start, readNow) == readNow);
+		  DvbReader.reduceDataleft(readNow);
 		  
-		  DvbReader.reduceDataleft(dataleft);
-
-		  if(extension>0) {
-			  //Changes the packet between reading.
-			  assert(nextPacket());
-
-			  assert(read + System.in.read(buffer, dataleft, extension) == buffer.length);
-
-			  DvbReader.reduceDataleft(extension);
-		  }
-
-		  return true;
-
 	  } catch (IOException e) {
 
 		  e.printStackTrace();
 		  return false;
 
 	  }
+	  
+	  if(toRead > packetDataLeft) {
+		  
+		  //Changes the packet between reading.
+		  assert(nextPacket());
+		   
+		  assert(start + readNow < buffer.length);
+		  readFromPackets(buffer, start + readNow);
+
+	  }
+	  
+	  return true;
 
   }
 	
   public static boolean nextPacket() {
+	  
 	  System.out.println("\n----[new packet]-----");
 	  
 	  if(DvbReader.seekPid(epgpids) == 0) {		  
 		  return false;
 	  }
 	  return true;
+	  
   }
   
   public static boolean readPacket() {
 
+	  assert(DvbReader.getDataleft()==0);
 	  assert(nextPacket());
 
 	  //if(eventLenght==0) {
@@ -136,7 +137,7 @@ public class EPGReader {
   private static byte[] bufferPrefix = new byte[PREFIX_SIZE];
 
   public static boolean readPrefix() {
-	  return DvbReader.read(bufferPrefix);
+	  return readFromPackets(bufferPrefix,0 );
   }
 
   public static String getPrefixAsHex() {
@@ -158,10 +159,9 @@ public class EPGReader {
 
   private static byte[] bufferEventHeader = new byte[EVENT_HEADER_SIZE];
 
-
 	
   public static boolean readEventHeader() {
-	  return readFromPackets(bufferEventHeader);
+	  return readFromPackets(bufferEventHeader,0 );
   }
 
   public static String getEventHeaderAsHex() {
@@ -185,7 +185,7 @@ public class EPGReader {
   private static byte[] bufferDescriptorTL = new byte[DESCRIPTOR_TAG_AND_LENGHT_SIZE];
 
   public static boolean readDescriptorTL() {
-	  return readFromPackets(bufferDescriptorTL);
+	  return readFromPackets(bufferDescriptorTL,0 );
   }
 
   public static String getDescriptorTLAsHex() {
@@ -207,7 +207,7 @@ public class EPGReader {
   public static boolean readData() {
 	  assert(bufferData!=null);
 	  
-	  return DvbReader.read(bufferData);
+	  return readFromPackets(bufferData,0);
   }
 
   public static String getDataAsText() {
@@ -222,7 +222,7 @@ public class EPGReader {
   private static byte[] bufferCRC = new byte[CRC_SIZE];
   
   private static boolean readCRC() {
-	  return DvbReader.read(bufferCRC);
+	  return readFromPackets(bufferCRC,0);
   }
   
   private static int descLenght = 0;
@@ -303,11 +303,15 @@ public class EPGReader {
 				  //assert(DvbReader.getDataleft()>0);
 				  
 				  // Section continues in next packet.
+				  /*
 				  if(descLenght > DvbReader.getDataleft()) {
 					  bufferData = new byte[DvbReader.getDataleft()];
 				  }else {
 					  bufferData = new byte[descLenght];
 				  }
+				  */
+				  
+				  bufferData = new byte[descLenght];
 				  
 				  descLenght -= bufferData.length;
 				  eventLenght -= bufferData.length;
@@ -315,9 +319,9 @@ public class EPGReader {
 				  ///assert(dlLenght>=0);
 				  
 				  // Print data of descriptor.
-				  if(DvbReader.getDataleft()>0) {
-					  assert(readData());
-				  }
+
+				  assert(readData());
+
 				  System.out.println(getDataAsText());
 				  
 				  // Descriptor continues on next packet
