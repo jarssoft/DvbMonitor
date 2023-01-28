@@ -84,9 +84,7 @@ public class EPGReader {
 
 	  //if(eventLenght==0) {
 
-	  if(descLenght==0) {
-
-		  //if(dlLenght<=0) {
+	  //if(dlLenght<=0) {
 		  if(section_length == 27) { //<= 27+EVENT_HEADER_SIZE){
 
 			  if(!readPrefix()) {
@@ -114,8 +112,6 @@ public class EPGReader {
 			  }
 
 		  }
-
-	  }
 
 	  return true;
   }
@@ -225,7 +221,7 @@ public class EPGReader {
 	  return readFromPackets(bufferCRC,0);
   }
   
-  private static int descLenght = 0;
+  //private static int descLenght = 0;
   private static int eventLenght = 0;
 
   public static void main(String[] args) {
@@ -255,81 +251,51 @@ public class EPGReader {
 
 		  //result.append(getDataAsText()); 	      
 
-		  if(bufferPrefix[0]==0 || descLenght>0) {
+		  if(bufferPrefix[0]==0) {
 
 			  // Descriptor loop
 			  do {
 
-				  // Starting to read new descriptor.
-				  if(descLenght==0) {
-
-					  if(eventLenght==0) {
-						  //No enough data left in packet.
-						  /*
+				  if(eventLenght==0) {
+					  //No enough data left in packet.
+					  /*
 						  if(DvbReader.getDataleft() <= EVENT_HEADER_SIZE + 1) {
 							  break;
 						  }*/
-						  nextEvent();
-						  section_length -= EVENT_HEADER_SIZE;
-						  assert(eventLenght>=2):"eventLenght must be >=2. eventLenght="+eventLenght;
-					  }
-					  
+					  nextEvent();
+					  section_length -= EVENT_HEADER_SIZE;
 					  assert(eventLenght>=2):"eventLenght must be >=2. eventLenght="+eventLenght;
+				  }
+
+				  assert(eventLenght>=2):"eventLenght must be >=2. eventLenght="+eventLenght;
+				  
+				  //Read descriotion
+				  {
 					  assert(readDescriptorTL());					  
-					  
+	
 					  System.out.print("    Desc: (e"+eventLenght+") "+getDescriptorTLAsHex()+"  ");
-					  eventLenght -= DESCRIPTOR_TAG_AND_LENGHT_SIZE;
-					  section_length -= DESCRIPTOR_TAG_AND_LENGHT_SIZE;
-					  
+	
 					  if(getDescriptorTag()==0x4d || getDescriptorTag()==0x54 
 							  || getDescriptorTag()==0x55
-							  || (getDescriptorTag() & 0xF0) == 0x50) {
-						  
-					  } else {
-						  //short_event_desc = 0x4D
-						  //content_descriptor = 0x54
-						  //parental_rating_descriptor = 0x55
+							  || (getDescriptorTag() & 0xF0) == 0x50) {}
 	
-						  //assert(getDescriptorLenght()<=DvbReader.getDataleft());
-					  
-						  //break;
-					  }
-
-					  descLenght = getDescriptorLenght();
-
-				  }
-				  
-				  assert(descLenght>0);
-				  //assert(DvbReader.getDataleft()>0);
-				  
-				  // Section continues in next packet.
-				  /*
-				  if(descLenght > DvbReader.getDataleft()) {
-					  bufferData = new byte[DvbReader.getDataleft()];
-				  }else {
+					  int descLenght = getDescriptorLenght();
+					  assert(descLenght>0);
 					  bufferData = new byte[descLenght];
+	
+					  eventLenght -= (DESCRIPTOR_TAG_AND_LENGHT_SIZE + bufferData.length);
+					  section_length -= (DESCRIPTOR_TAG_AND_LENGHT_SIZE + bufferData.length);
+					  
+					  assert(readData());
+					//Print data of descriptor.
+					  
+					  System.out.println(getDataAsText());
+					  
 				  }
-				  */
-				  
-				  bufferData = new byte[descLenght];
-				  
-				  descLenght -= bufferData.length;
-				  eventLenght -= bufferData.length;
-				  section_length -= bufferData.length;
-				  ///assert(dlLenght>=0);
-				  
-				  // Print data of descriptor.
 
-				  assert(readData());
 
-				  System.out.println(getDataAsText());
-				  
-				  // Descriptor continues on next packet
-				  if(descLenght>0) {
-					  break;
-				  }
-				  
-			  } while(DvbReader.getDataleft() >= 0 && section_length > 27);
+ 
+			  } while(section_length > 27);
 		  }
 
 		  assert(DvbReader.readLeft());
