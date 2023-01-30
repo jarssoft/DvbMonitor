@@ -1,4 +1,8 @@
 import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDateTime;
+
+import org.junit.jupiter.params.shadow.com.univocity.parsers.conversions.ToStringConversion;
 
 public class EPGReader {
 
@@ -127,6 +131,39 @@ public class EPGReader {
   private static int getDescriptorLoopLenght() {
 	  return ((bufferEventHeader[10] & 0x0F) << 8) + (bufferEventHeader[11] & 0xFF);
   }
+  
+  static int timeunit(byte b) {
+	  
+	  return ((b & 0xF0) >> 4) * 10 + (b & 0x0F);
+  }
+  
+  private static String getEventStart() {
+
+	 return LocalDateTime.of(2023, 1, 30,
+			 timeunit(bufferEventHeader[4]), 
+			 timeunit(bufferEventHeader[5]),  
+			 timeunit(bufferEventHeader[6])).toString();
+
+}
+  
+  public static String formatDuration(Duration duration) {
+	    long seconds = duration.getSeconds();
+	    long absSeconds = Math.abs(seconds);
+	    String positive = String.format(
+	        "%d:%02d:%02d",
+	        absSeconds / 3600,
+	        (absSeconds % 3600) / 60,
+	        absSeconds % 60);
+	    return seconds < 0 ? "-" + positive : positive;
+	}
+
+private static String getEventDuration() {
+	
+	return formatDuration(Duration.ofSeconds(timeunit(bufferEventHeader[7])*60*60+
+			timeunit(bufferEventHeader[8])*60+
+			timeunit(bufferEventHeader[9])));
+	
+}
 
   /**********************/
 
@@ -205,6 +242,7 @@ public class EPGReader {
 	  
 	  assert(readEventHeader());
 	  System.out.println("  Event: " + getEventHeaderAsHex());
+	  System.out.println("    Starts: " + getEventStart() + ", Duration: "+getEventDuration());
 	  //System.out.println("  Event: (s" + section_length + ") " + getEventHeaderAsHex());
 	  
 	  //eventLenght = getDescriptorLoopLenght();	  
@@ -214,8 +252,9 @@ public class EPGReader {
 	  return getDescriptorLoopLenght();
 	  
   }
-  
-  public static void main(String[] args) {
+
+
+public static void main(String[] args) {
 
 	  assert(DvbReader.HEADER_SIZE + PREFIX_SIZE + EVENT_HEADER_SIZE + DATA_SIZE == DvbReader.TS_PACKET_SIZE);
 
