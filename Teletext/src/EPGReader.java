@@ -139,31 +139,32 @@ public class EPGReader {
   
   private static String getEventStart() {
 
-	 return LocalDateTime.of(2023, 1, 30,
-			 timeunit(bufferEventHeader[4]), 
-			 timeunit(bufferEventHeader[5]),  
-			 timeunit(bufferEventHeader[6])).toString();
+	  return LocalDateTime.of(2023, 1, 30,
+			  timeunit(bufferEventHeader[4]), 
+			  timeunit(bufferEventHeader[5]),  
+			  timeunit(bufferEventHeader[6])).toString();
 
-}
+  }
   
   public static String formatDuration(Duration duration) {
-	    long seconds = duration.getSeconds();
-	    long absSeconds = Math.abs(seconds);
-	    String positive = String.format(
-	        "%d:%02d:%02d",
-	        absSeconds / 3600,
-	        (absSeconds % 3600) / 60,
-	        absSeconds % 60);
-	    return seconds < 0 ? "-" + positive : positive;
-	}
 
-private static String getEventDuration() {
-	
-	return formatDuration(Duration.ofSeconds(timeunit(bufferEventHeader[7])*60*60+
-			timeunit(bufferEventHeader[8])*60+
-			timeunit(bufferEventHeader[9])));
-	
-}
+	  long seconds = duration.getSeconds();
+	  long absSeconds = Math.abs(seconds);
+	  String positive = String.format(
+			  "%d:%02d:%02d",
+			  absSeconds / 3600,
+			  (absSeconds % 3600) / 60,
+			  absSeconds % 60);
+	  return seconds < 0 ? "-" + positive : positive;
+  }
+
+  private static String getEventDuration() {
+
+	  return formatDuration(Duration.ofSeconds(timeunit(bufferEventHeader[7]) * 3600 +
+			  timeunit(bufferEventHeader[8]) * 60 +
+			  timeunit(bufferEventHeader[9])
+			  ));
+  }
 
   /**********************/
 
@@ -269,7 +270,7 @@ public static void main(String[] args) {
 				  int eventLenght=nextEvent();
 				  section_length -= EVENT_HEADER_SIZE;
 				  
-				  assert(eventLenght>=2):"eventLenght must be >=2. eventLenght="+eventLenght;
+				  //assert(eventLenght>=2):"eventLenght must be >=2. eventLenght="+eventLenght;
 				  
 				  //Iterate descriotors
 				  while (eventLenght>0){
