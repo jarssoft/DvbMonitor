@@ -146,6 +146,8 @@ public class DvbReader {
 		}
 		
 	}
+	
+	private static byte[] left = new byte[HEADER_SIZE];
 
 	public static boolean readLeft() {
 		
@@ -156,14 +158,19 @@ public class DvbReader {
 		assert(dataleft >= 0): "dataleft must be zero or positive, but dataleft = " + dataleft;
 		assert(dataleft < TS_PACKET_SIZE);
 		
-		byte[] left = new byte[dataleft];
-		boolean ok= read(left);
+		left = new byte[dataleft];
+		boolean ok = read(left);
+		
 		
 		String s = new String(left, StandardCharsets.UTF_8);
-		System.out.println((left[0]!=0xFF ? SubtitleMonitor.ANSI_LRED : "")+s+SubtitleMonitor.ANSI_RESET);
+		//System.out.println((left[0]!=0xFF ? SubtitleMonitor.ANSI_LRED : "")+s+SubtitleMonitor.ANSI_RESET);
 		
 		return ok;
 		
+	}
+	
+	public static byte[] getLeft() {
+		return left;
 	}
 
 }

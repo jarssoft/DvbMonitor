@@ -259,6 +259,8 @@ public static void main(String[] args) {
 
 	  assert(DvbReader.HEADER_SIZE + PREFIX_SIZE + EVENT_HEADER_SIZE + DATA_SIZE == DvbReader.TS_PACKET_SIZE);
 
+	  boolean first_packet_detected = false;
+	  
 	  // TS loop
 	  while (true) {
 
@@ -266,6 +268,8 @@ public static void main(String[] args) {
 
 			  // Iterate events
 			  while(section_length > SECTIONZERO) {
+				  
+				  first_packet_detected = true;
 
 				  int eventLenght=nextEvent();
 				  section_length -= EVENT_HEADER_SIZE;
@@ -296,7 +300,11 @@ public static void main(String[] args) {
 
 			  } 
 
-		  assert(DvbReader.readLeft());
+		  assert(readCRC());
+		  assert(DvbReader.readLeft());		  
+		  assert(first_packet_detected==false 
+				  || DvbReader.getLeft().length==0 
+				  || (DvbReader.getLeft()[0] & 0xFF) == 0xFF);
 	  }
   }
 }
