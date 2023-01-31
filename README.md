@@ -10,7 +10,7 @@ Extracts teletext and other stuff from MPEG Trasport Stream binary data.
 
 ## Installation
 
-DvbMonitor runs on Java Runtime Environment on the Linux system. To receive television signal as Transport Stream you need the device and software for tuning.
+DvbMonitor runs on Java Runtime Environment (at least OpenJDK 11 and 17) on the Linux system. To receive television signal as Transport Stream you need the device and software for tuning.
 
 ## Using
 
