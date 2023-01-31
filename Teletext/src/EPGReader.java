@@ -143,6 +143,10 @@ public class EPGReader {
 
 	  int MJD = (((bufferEventHeader[2] & 0xFF) << 8) |(bufferEventHeader[3] & 0xFF));
 	  
+	  if (MJD==0xFFFF) {
+		  return null;
+	  }
+	  
 	  int Yh=(int)((MJD-15078.2)/365.25);
 	  	  
 	  int Mh = (int)(( MJD - 14956.1 - (int) (Yh * 365.25) ) / 30.6001 );
@@ -154,6 +158,11 @@ public class EPGReader {
 	  int Y = Yh + K;
 			  
 	  int M = Mh - 1 - K * 12;
+	  
+	  if ((bufferEventHeader[4] & 0xFF) == 0xFF) {
+		  return null;
+	  }
+	  
 	  
 	  return LocalDateTime.of(Y + 1900, M, D,
 			  timeunit(bufferEventHeader[4]), 
@@ -260,6 +269,7 @@ public class EPGReader {
   /*********************/
   
   private static int SECTIONZERO = 15;
+  private static boolean SAFEMODE = true; 
   
   public static int nextSection() {
 
@@ -289,12 +299,21 @@ public class EPGReader {
 	  
 	  assert(readEventHeader());
 	  System.out.println("  Event: " + getEventHeaderAsHex());
+
+	  
+	  assert(SAFEMODE || (bufferEventHeader[2] & 0xFF) == 0xEA): "Error in EventHeader.";
+	  
+	  if((bufferEventHeader[2] & 0xFF) != 0xEA) {
+		  return 0;
+	  }
+	  
+	  
 	  System.out.println("    Starts: " + getEventStart() + ", Duration: "+getEventDuration());
 	  //System.out.println("  Event: (s" + section_length + ") " + getEventHeaderAsHex());
 	  
 	  //eventLenght = getDescriptorLoopLenght();	  
 	  
-	  assert((bufferEventHeader[2] & 0xFF) == 0xEA): "Error in EventHeader.";
+	  
 	  
 	  return getDescriptorLoopLenght();
 	  
@@ -312,7 +331,7 @@ public static void main(String[] args) {
 
 		  int section_length = nextSection();
 
-		  assert(first_packet_detected == false || section_length>=SECTIONZERO);
+		  //assert(first_packet_detected == false || section_length>=SECTIONZERO);
 
 		  // Iterate events
 		  while(section_length > SECTIONZERO) {
@@ -332,7 +351,7 @@ public static void main(String[] args) {
 				  System.out.print("    Desc: (e"+eventLenght+") "+getDescriptorTLAsHex()+"  ");
 
 				  int descLenght = getDescriptorLenght();
-				  assert(descLenght>0);
+				  assert(SAFEMODE || descLenght>0);
 				  bufferData = new byte[descLenght];
 
 				  eventLenght -= (DESCRIPTOR_TAG_AND_LENGHT_SIZE + bufferData.length);
@@ -363,9 +382,12 @@ public static void main(String[] args) {
 
 		  assert(readCRC());
 		  assert(DvbReader.readLeft());		  
-		  assert(first_packet_detected==false 
+		  
+		  assert(SAFEMODE 
+				  || first_packet_detected==false 
 				  || DvbReader.getLeft().length==0 
 				  || (DvbReader.getLeft()[0] & 0xFF) == 0xFF);
+				  
 	  }
   }
 }
