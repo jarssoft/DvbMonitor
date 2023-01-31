@@ -23,19 +23,19 @@ dvbv5-zap -c channels-v5.conf 610000000 -P
 Then use /dev/dvb/adapter0/dvr0 as standard input,
 
 <pre>
-cat /dev/dvb/adapter0/dvr0 |java Monitor
+cat /dev/dvb/adapter0/dvr0 |java -ea Monitor
 </pre>
 
 ...or use [dvbsnoop](https://dvbsnoop.sourceforge.net/) to get only one PID,
 
 <pre>
-dvbsnoop -s ts -b 5000 |java Monitor
+dvbsnoop -s ts -b 5000 |java -ea Monitor
 </pre>
 
 ...or give it an example transport stream from file:
 
 <pre>
-cat ../test.ts |java Monitor
+cat ../test.ts |java -ea Monitor
 </pre>
 
 ## SubtitleMonitor
