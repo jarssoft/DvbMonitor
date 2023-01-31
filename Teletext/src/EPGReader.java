@@ -2,8 +2,6 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
-import org.junit.jupiter.params.shadow.com.univocity.parsers.conversions.ToStringConversion;
-
 public class EPGReader {
 
 	private static boolean isAsciiPrintable(char ch) {
@@ -100,12 +98,16 @@ public class EPGReader {
 	  return (((bufferSection[2] & (byte)0x0F)) << 8) | (bufferSection[3] & 0xFF);
   }
   
+  public static int getServiceId() {
+	  return (((bufferSection[4] & (byte)0xFF)) << 8) + (bufferSection[5] & 0xFF);
+  }
+  
   public static boolean correctSection() {
 	  int ti = bufferSection[1];	
 	  
 	  return (bufferSection[0]==0 && 
 			  (ti==0x4e || ti==0x4f || (ti & 0xF0)==0x50 || (ti & 0xF0)==0x60)
-			  && getSectionLenght()>SECTIONZERO);
+			  && getSectionLenght()>=SECTIONZERO);
   }
 
   /**********************/
@@ -136,14 +138,28 @@ public class EPGReader {
 	  
 	  return ((b & 0xF0) >> 4) * 10 + (b & 0x0F);
   }
-  
+
   private static String getEventStart() {
 
-	  return LocalDateTime.of(2023, 1, 30,
+	  int MJD = (((bufferEventHeader[2] & 0xFF) << 8) |(bufferEventHeader[3] & 0xFF));
+	  
+	  int Yh=(int)((MJD-15078.2)/365.25);
+	  	  
+	  int Mh = (int)(( MJD - 14956.1 - (int) (Yh * 365.25) ) / 30.6001 );
+			  
+	  int D = MJD - 14956 - (int) (Yh * 365.25) - (int) (Mh * 30.6001 );
+	  
+	  int K = (Mh == 14 || Mh == 15 ? 1 : 0);
+			  
+	  int Y = Yh + K;
+			  
+	  int M = Mh - 1 - K * 12;
+	  
+	  return LocalDateTime.of(Y + 1900, M, D,
 			  timeunit(bufferEventHeader[4]), 
 			  timeunit(bufferEventHeader[5]),  
-			  timeunit(bufferEventHeader[6])).toString();
-
+			  timeunit(bufferEventHeader[6])
+			  ).toString();
   }
   
   public static String formatDuration(Duration duration) {
@@ -171,7 +187,7 @@ public class EPGReader {
   private static byte[] bufferDescriptorTL = new byte[DESCRIPTOR_TAG_AND_LENGHT_SIZE];
 
   public static boolean readDescriptorTL() {
-	  return readFromPackets(bufferDescriptorTL,0 );
+	  return readFromPackets(bufferDescriptorTL, 0 );
   }
 
   public static String getDescriptorTLAsHex() {
@@ -189,13 +205,41 @@ public class EPGReader {
   /**********************/
   
   private static byte[] bufferData = new byte[DATA_SIZE];
+  
+  private static final String[] nibbles = {
+		  "undefined", 
+		  "Movie/Drama", 
+		  "News/Current affairs",
+		  "Show/Game show", 
+		  "Sports",
+		  "Children's/Youth programmes",
+		  "Music/Ballet/Dance",
+		  "Arts/Culture (without music)",
+		  "Social/Political issues/Economics",
+		  "Education/ Science/Factual topics",
+		  "Leisure hobbies" ,
+		  "Leisure hobbies",
+		  "","","",""
+  };
 
   public static boolean readData() {
 	  assert(bufferData!=null);
 	  
 	  return readFromPackets(bufferData,0);
   }
+  
+  public static String getDataAsHex() {
+	  return DvbReader.byteBuffertoHex(bufferData);
+  }
 
+  public static byte getContentNibble() {
+	  return bufferData[0];
+  }
+  
+  public static int getParentalRating() {
+	  return (bufferData[3]>=0x01 && bufferData[3]<=0x0F ? bufferData[3] + 3 : 0);
+  }
+  
   public static String getDataAsText() {
 	  StringBuilder result = new StringBuilder();
 	  for (byte aByte : bufferData) {
@@ -203,6 +247,7 @@ public class EPGReader {
 	  }
 	  return result.toString();
   }
+
 
   /*********************/
   
@@ -227,6 +272,7 @@ public class EPGReader {
 
 	  //System.out.println("  s"+section_length);
 	  System.out.println("Section: "+getPrefixAsHex());
+	  System.out.println("  Service: "+getServiceId());
 
 	  if(correctSection()) {
 		  return getSectionLenght();
@@ -266,39 +312,54 @@ public static void main(String[] args) {
 
 		  int section_length = nextSection();
 
-			  // Iterate events
-			  while(section_length > SECTIONZERO) {
-				  
-				  first_packet_detected = true;
+		  assert(first_packet_detected == false || section_length>=SECTIONZERO);
 
-				  int eventLenght=nextEvent();
-				  section_length -= EVENT_HEADER_SIZE;
-				  
-				  //assert(eventLenght>=2):"eventLenght must be >=2. eventLenght="+eventLenght;
-				  
-				  //Iterate descriotors
-				  while (eventLenght>0){
+		  // Iterate events
+		  while(section_length > SECTIONZERO) {
+
+			  first_packet_detected = true;
+
+			  int eventLenght=nextEvent();
+			  section_length -= EVENT_HEADER_SIZE;
+
+			  //assert(eventLenght>=2):"eventLenght must be >=2. eventLenght="+eventLenght;
+
+			  //Iterate descriotors
+			  while (eventLenght>0){
+
+				  assert(readDescriptorTL());					  
+
+				  System.out.print("    Desc: (e"+eventLenght+") "+getDescriptorTLAsHex()+"  ");
+
+				  int descLenght = getDescriptorLenght();
+				  assert(descLenght>0);
+				  bufferData = new byte[descLenght];
+
+				  eventLenght -= (DESCRIPTOR_TAG_AND_LENGHT_SIZE + bufferData.length);
+				  section_length -= (DESCRIPTOR_TAG_AND_LENGHT_SIZE + bufferData.length);
+
+				  assert(readData());
+
+				  //Print data of descriptor.
+
+				  if(getDescriptorTag() == 0x54) {
 					  
-					  assert(readDescriptorTL());					  
-	
-					  System.out.print("    Desc: (e"+eventLenght+") "+getDescriptorTLAsHex()+"  ");
-	
-					  int descLenght = getDescriptorLenght();
-					  assert(descLenght>0);
-					  bufferData = new byte[descLenght];
-	
-					  eventLenght -= (DESCRIPTOR_TAG_AND_LENGHT_SIZE + bufferData.length);
-					  section_length -= (DESCRIPTOR_TAG_AND_LENGHT_SIZE + bufferData.length);
+					  System.out.print(getDataAsHex()+"  ");
+					  System.out.print(nibbles[(getContentNibble() & 0xF0) >> 4]);
+					  System.out.println();
 					  
-					  assert(readData());
+				  }else if(getDescriptorTag() == 0x55) {
 					  
-					  //Print data of descriptor.
+					  //System.out.print(getDataAsText()+"  "+getParentalRating());
+					  System.out.println();
+					  
+				  }else {
 					  
 					  System.out.println(getDataAsText());
 					  
 				  }
-
-			  } 
+			  }
+		  } 
 
 		  assert(readCRC());
 		  assert(DvbReader.readLeft());		  
