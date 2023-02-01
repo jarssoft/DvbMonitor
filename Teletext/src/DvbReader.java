@@ -30,14 +30,29 @@ public class DvbReader {
 	public static boolean read(byte[] buffer) {
 		
 		assert(buffer.length > 0): "buffer.length must be greater than zero, but buffer.length = " + buffer.length;
-		assert(buffer.length <= getDataleft()): "No enought data in this packet. getDataleft() = "+getDataleft();
+		assert(buffer.length <= getDataleft()): "No enought data in this packet. getDataleft() = " + getDataleft();
 		
 		try {
+			
 			dataleft -= buffer.length;
-			return System.in.read(buffer) > 0;
+			
+			int readed=System.in.read(buffer);
+			//System.out.println(readed);
+			//buffer = System.in.readNBytes(buffer.length);
+			//assert(readed==buffer.length):"Only "+readed+" read. Must read "+buffer.length;
+			if(readed<buffer.length) {
+				System.out.println("Only "+readed+" readed.");
+				int second = System.in.read(buffer,readed,buffer.length-readed);
+				System.out.println("Second try: "+second);
+				readed+=second;
+				System.out.println("Together "+readed+" readed.");}
+			return readed==buffer.length;
+			
 		} catch (IOException e) {
+			
 			e.printStackTrace();
 			return false;
+			
 		}
 		
 	}
@@ -113,7 +128,7 @@ public class DvbReader {
 	}
 
 	/** Transport Stream Monitor */
-	public static void main(String[] args) {
+	public static void mainb(String[] args) {
 		
 		int packets=0;
 		int[] lastpn=new int[8191+1];
@@ -121,40 +136,43 @@ public class DvbReader {
 		dataleft=Integer.MAX_VALUE;
 		while(readId() && packets<500000) {
 			
-			System.out.print((packets++)+"  ");						
-			
-			System.out.print(getIdAsHex());
-			
-			System.out.print(hasSyncByte()?" OK":"!!");
-									
-			if(hasSyncByte()) {
-				
-				int pid=getPid();
-				
-				System.out.print("  pid:"+pid+" ");
-				
-				System.out.print(getPacketNumber()==((lastpn[pid]+1) % 0x10)?"":" *");
-				lastpn[pid] = getPacketNumber(); 
-				
-				if(read(bufferPayload)==false) {
-					return;
+			if(hasSyncByte() && getPid()==0x12) {
+					
+				System.out.print((packets++)+"  ");						
+				System.out.print(getIdAsHex());
+				System.out.print(hasSyncByte()?" OK":"!!");
+										
+				if(hasSyncByte()) {
+					
+					int pid=getPid();
+					
+					System.out.print("  pid:"+pid+" ");
+					System.out.print(getPacketNumber()==((lastpn[pid]+1) % 0x10)?"":" *");
+					
+					lastpn[pid] = getPacketNumber(); 
+
 				}
 				
+				System.out.println();
+			
 			}
 			
-			System.out.println();
+			if(read(bufferPayload)==false) {
+				return;
+			}
 			
 		}
 		
 	}
 	
 	/** Transport Stream Monitor */
-	public static void mains(String[] args) {
+	public static void main(String[] args) {
 		
 		int packets=0;
 		int[] pidfilter= {0x12};
 		
 		while(seekPid(pidfilter) == 0x12) {
+						
 			
 			System.out.print((packets++)+" ");						
 			
