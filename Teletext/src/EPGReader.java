@@ -190,6 +190,12 @@ public class EPGReader {
 			  timeunit(bufferEventHeader[9])
 			  ));
   }
+  
+  private static boolean validEvent() {
+		//Rude way to check is event is valid.
+		return ((bufferEventHeader[2] & 0xFF) < 0xD6 || (bufferEventHeader[2] & 0xFF) > 0xF0);
+	}
+
 
   /**********************/
 
@@ -300,24 +306,23 @@ public class EPGReader {
 	  assert(readEventHeader());
 	  System.out.println("  Event: " + getEventHeaderAsHex());
 
-	  
-	  assert(SAFEMODE || (bufferEventHeader[2] & 0xFF) == 0xEA): "Error in EventHeader.";
-	  
-	  if((bufferEventHeader[2] & 0xFF) != 0xEA) {
+	  //assert(SAFEMODE || (bufferEventHeader[2] & 0xFF) == 0xEA): "Error in EventHeader.";
+
+	  if(validEvent()) {
 		  return 0;
 	  }
-	  
+	  //}
 	  
 	  System.out.println("    Starts: " + getEventStart() + ", Duration: "+getEventDuration());
+	  
 	  //System.out.println("  Event: (s" + section_length + ") " + getEventHeaderAsHex());
 	  
 	  //eventLenght = getDescriptorLoopLenght();	  
 	  
-	  
-	  
 	  return getDescriptorLoopLenght();
 	  
   }
+
 
 
 public static void main(String[] args) {
@@ -340,6 +345,10 @@ public static void main(String[] args) {
 
 			  int eventLenght=nextEvent();
 			  section_length -= EVENT_HEADER_SIZE;
+			  
+			  if(eventLenght==0) {
+				  section_length=SECTIONZERO;
+			  }
 
 			  //assert(eventLenght>=2):"eventLenght must be >=2. eventLenght="+eventLenght;
 
@@ -349,8 +358,15 @@ public static void main(String[] args) {
 				  assert(readDescriptorTL());					  
 
 				  System.out.print("    Desc: (e"+eventLenght+") "+getDescriptorTLAsHex()+"  ");
-
+				  
 				  int descLenght = getDescriptorLenght();
+				  
+				  if(getDescriptorTag()==0x4d || getDescriptorTag()==0x54 
+						  || getDescriptorTag()==0x55
+						  || (getDescriptorTag() & 0xF0) == 0x50) {
+					  
+				  }
+				  
 				  assert(SAFEMODE || descLenght>0);
 				  bufferData = new byte[descLenght];
 
