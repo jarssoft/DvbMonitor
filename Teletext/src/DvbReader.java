@@ -118,7 +118,43 @@ public class DvbReader {
 		int packets=0;
 		int[] lastpn=new int[8191+1];
 		
-		while(readId() && packets<5000) {
+		dataleft=Integer.MAX_VALUE;
+		while(readId() && packets<500000) {
+			
+			System.out.print((packets++)+"  ");						
+			
+			System.out.print(getIdAsHex());
+			
+			System.out.print(hasSyncByte()?" OK":"!!");
+									
+			if(hasSyncByte()) {
+				
+				int pid=getPid();
+				
+				System.out.print("  pid:"+pid+" ");
+				
+				System.out.print(getPacketNumber()==((lastpn[pid]+1) % 0x10)?"":" *");
+				lastpn[pid] = getPacketNumber(); 
+				
+				if(read(bufferPayload)==false) {
+					return;
+				}
+				
+			}
+			
+			System.out.println();
+			
+		}
+		
+	}
+	
+	/** Transport Stream Monitor */
+	public static void mains(String[] args) {
+		
+		int packets=0;
+		int[] pidfilter= {0x12};
+		
+		while(seekPid(pidfilter) == 0x12) {
 			
 			System.out.print((packets++)+" ");						
 			
@@ -130,17 +166,13 @@ public class DvbReader {
 				
 				int pid=getPid();
 				
-				System.out.print("  "+pid+" ");
-				
-				System.out.print(getPacketNumber()==((lastpn[pid]+1) % 0x10)?"":" *");
-				lastpn[pid] = getPacketNumber(); 
+				System.out.print("  pid:"+pid+" ");
 				
 				if(read(bufferPayload)==false) {
 					return;
 				}
 				
 			}
-			
 			System.out.println();
 			
 		}
@@ -163,7 +195,7 @@ public class DvbReader {
 		
 		
 		String s = new String(left, StandardCharsets.UTF_8);
-		//System.out.println((left[0]!=0xFF ? SubtitleMonitor.ANSI_LRED : "")+s+SubtitleMonitor.ANSI_RESET);
+		System.out.println((left[0]!=0xFF ? SubtitleMonitor.ANSI_LRED : "")+s+SubtitleMonitor.ANSI_RESET);
 		
 		return ok;
 		
