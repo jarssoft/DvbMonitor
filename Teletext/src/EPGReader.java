@@ -21,11 +21,12 @@ public class EPGReader {
 	}
 
   /**********************/
-    
-  final private static int PREFIX_SIZE = 6 + 8 + 1;
+	
+  final private static int PAYLOADPOINTER_SIZE = 1;
+  final private static int SECTION_HEADER_SIZE = 14;  
   final private static int EVENT_HEADER_SIZE = 12;
   final private static int DESCRIPTOR_TAG_AND_LENGHT_SIZE = 2;
-  final private static int DATA_SIZE = DvbReader.PAYLOAD_SIZE - PREFIX_SIZE - EVENT_HEADER_SIZE;
+  final private static int DATA_SIZE = DvbReader.PAYLOAD_SIZE - PAYLOADPOINTER_SIZE - SECTION_HEADER_SIZE - EVENT_HEADER_SIZE;
   final private static int CRC_SIZE = 4;
   
   private final static int epgpids[] = {0x12};
@@ -77,10 +78,11 @@ public class EPGReader {
   
   /**********************/
 
-  private static byte[] bufferSection = new byte[PREFIX_SIZE];
+  private static byte[] bufferPayloadPointer = new byte[PAYLOADPOINTER_SIZE];
+  private static byte[] bufferSection = new byte[SECTION_HEADER_SIZE];
 
-  public static boolean readSection() {
-	  return readFromPackets(bufferSection,0 );
+  public static boolean readSection() {	  
+	  return readFromPackets(bufferPayloadPointer, 0) && readFromPackets(bufferSection, 0);
   }
 
   public static String getPrefixAsHex() {
@@ -88,25 +90,24 @@ public class EPGReader {
   }
 
   public static int getTableID() {
-	  return bufferSection[1];//(decodeHamming(bufferPrefix[5])<<1) | (((byte)bufferPrefix[4] & (byte)0b00000001));
+	  return bufferSection[0];//(decodeHamming(bufferPrefix[5])<<1) | (((byte)bufferPrefix[4] & (byte)0b00000001));
   }
 
   public static int getSectionLenght() {
 	  //System.out.println(Integer.toBinaryString(0x0F & (int)bufferPrefix[2]));
 	  //System.out.println(Integer.toBinaryString((byte)0x0F));
 	  //System.out.println(Integer.toBinaryString(0xFF & bufferPrefix[3]));
-	  return (((bufferSection[2] & (byte)0x0F)) << 8) | (bufferSection[3] & 0xFF);
+	  return (((bufferSection[1] & (byte)0x0F)) << 8) | (bufferSection[2] & 0xFF);
   }
   
   public static int getServiceId() {
-	  return (((bufferSection[4] & (byte)0xFF)) << 8) + (bufferSection[5] & 0xFF);
+	  return (((bufferSection[3] & (byte)0xFF)) << 8) + (bufferSection[4] & 0xFF);
   }
   
   public static boolean correctSection() {
-	  int ti = bufferSection[1];	
+	  int ti = getTableID();	
 	  
-	  return (bufferSection[0]==0 && 
-			  (ti==0x4e || ti==0x4f || (ti & 0xF0)==0x50 || (ti & 0xF0)==0x60)
+	  return ((ti==0x4e || ti==0x4f || (ti & 0xF0)==0x50 || (ti & 0xF0)==0x60)
 			  && getSectionLenght()>=SECTIONZERO);
   }
 
@@ -327,7 +328,7 @@ public class EPGReader {
 
 public static void main(String[] args) {
 
-	  assert(DvbReader.HEADER_SIZE + PREFIX_SIZE + EVENT_HEADER_SIZE + DATA_SIZE == DvbReader.TS_PACKET_SIZE);
+	  assert(DvbReader.HEADER_SIZE + PAYLOADPOINTER_SIZE + SECTION_HEADER_SIZE + EVENT_HEADER_SIZE + DATA_SIZE == DvbReader.TS_PACKET_SIZE);
 
 	  boolean first_packet_detected = false;
 	  
