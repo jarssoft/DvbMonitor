@@ -8,7 +8,8 @@ public class DvbReader {
 	final public static int TS_PACKET_SIZE = 188;
 	final public static int HEADER_SIZE = 4;
 	final public static int PAYLOAD_SIZE = TS_PACKET_SIZE - HEADER_SIZE;
-
+	final public static int PAYLOADPOINTER_SIZE = 1;
+	
 	private static int currentPID = 0;
 
 	public static int getCurrentPID() {
@@ -41,11 +42,14 @@ public class DvbReader {
 			//buffer = System.in.readNBytes(buffer.length);
 			//assert(readed==buffer.length):"Only "+readed+" read. Must read "+buffer.length;
 			if(readed<buffer.length) {
-				System.out.println("Only "+readed+" readed.");
-				int second = System.in.read(buffer,readed,buffer.length-readed);
-				System.out.println("Second try: "+second);
+				//System.out.println("Only "+readed+" readed.");
+				  assert(readed>=0) : "End of data!";
+				  
+				int second = System.in.read(buffer, readed, buffer.length-readed);
+				//System.out.println("Second try: "+second);
 				readed+=second;
-				System.out.println("Together "+readed+" readed.");}
+				//System.out.println("Together "+readed+" readed.");
+			}
 			return readed==buffer.length;
 			
 		} catch (IOException e) {
@@ -69,6 +73,7 @@ public class DvbReader {
 	/** Buffers for using read transport stream. */
 	private static byte[] bufferId = new byte[HEADER_SIZE];
 	private static byte[] bufferPayload = new byte[PAYLOAD_SIZE];
+	private static byte[] bufferPayloadPointer = new byte[PAYLOADPOINTER_SIZE];
 	
 	/** Read next id.*/
 	public static boolean readId() {
@@ -96,12 +101,21 @@ public class DvbReader {
 	private static int getPid() {
 		return ((0b00011111 & (byte)bufferId[1])<<8) | (0xFF & bufferId[2]);
 	};
+	
+	private static boolean hasPayloadPointer() {
+		return (bufferId[1] & 0b01000000) != 0;
+	}
+	
+	private static int getPayloadPointer() {
+		return bufferPayloadPointer[0] & 0xFF;
+	}
 
 	/** Reads transport stream to begin of the first packet,
 	 *  thats PID founds on array @pidfilter.*/  
 	public static int seekPid(final int[] pidfilter) {
 
-		assert(dataleft==0): "dataleft must be zero, but dataleft = " + dataleft;
+		//assert(dataleft==0): "dataleft must be zero, but dataleft = " + dataleft;
+		boolean continues=true;
 		
 		while(true) {
 			
@@ -117,9 +131,14 @@ public class DvbReader {
 				
 				if(contains(pidfilter, currentPID)) {
 					//System.out.println(getIdAsHex() + " (pid=" + pid + ")");
-					
+					if(hasPayloadPointer()) {
+						
+						assert(read(bufferPayloadPointer));
+					}					
 					break;
 				}
+				
+				continues=false;
 			}
 
 		}
@@ -128,7 +147,7 @@ public class DvbReader {
 	}
 
 	/** Transport Stream Monitor */
-	public static void mainb(String[] args) {
+	public static void maind(String[] args) {
 		
 		int packets=0;
 		int[] lastpn=new int[8191+1];
@@ -138,16 +157,16 @@ public class DvbReader {
 			
 			if(hasSyncByte() && getPid()==0x12) {
 					
-				System.out.print((packets++)+"  ");						
+				System.out.print((packets++) + "  ");						
 				System.out.print(getIdAsHex());
-				System.out.print(hasSyncByte()?" OK":"!!");
+				System.out.print(hasSyncByte() ? " OK" : "!!");
 										
 				if(hasSyncByte()) {
 					
 					int pid=getPid();
 					
-					System.out.print("  pid:"+pid+" ");
-					System.out.print(getPacketNumber()==((lastpn[pid]+1) % 0x10)?"":" *");
+					System.out.print("  pid:" + pid + " ");
+					System.out.print(getPacketNumber()==((lastpn[pid]+1) % 0x10) ? "": " *");
 					
 					lastpn[pid] = getPacketNumber(); 
 
@@ -186,7 +205,12 @@ public class DvbReader {
 				
 				System.out.print("  pid:"+pid+" ");
 				
-				if(read(bufferPayload)==false) {
+				if(hasPayloadPointer()) {
+					System.out.print(", payload:"+getPayloadPointer()+" ");
+				}
+								
+				if(readLeft()==false) {
+				//if(read(bufferPayload)==false) {
 					return;
 				}
 				
