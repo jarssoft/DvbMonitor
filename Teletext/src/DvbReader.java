@@ -11,19 +11,25 @@ public class DvbReader {
 	final public static int PAYLOADPOINTER_SIZE = 1;
 	
 	private static int currentPID = 0;
+	public static int readOffset = 0;
 
 	public static int getCurrentPID() {
 		assert currentPID>0 && currentPID<10000;
 		return currentPID;
 	}
 
-	private static int dataleft=0;
+	private static int dataleft=TS_PACKET_SIZE;
 	  
 	public static int getDataleft() {
 		return dataleft;
 	}
 	
+	public static int getReadOffset() {
+		return readOffset;
+	}
+	
 	public static void reduceDataleft(int dl) {
+		readOffset += dl;
 		dataleft -= dl;
 	}
 
@@ -35,7 +41,7 @@ public class DvbReader {
 		
 		try {
 			
-			dataleft -= buffer.length;
+			reduceDataleft(buffer.length);
 			
 			int readed=System.in.read(buffer);
 			//System.out.println(readed);
@@ -75,22 +81,25 @@ public class DvbReader {
 	private static byte[] bufferPayload = new byte[PAYLOAD_SIZE];
 	private static byte[] bufferPayloadPointer = new byte[PAYLOADPOINTER_SIZE];
 	
-	/** Read next id.*/
+	/** Read next id. */
 	public static boolean readId() {
-
 		return read(bufferId);
 	}
 
-	/** Get id as hexadecimal string.*/
-	public static String getIdAsHex() {
+	/** Get id as hexadecimal string. */
+	final public static String getIdAsHex() {
 		return byteBuffertoHex(bufferId);
+	}
+	
+	final public static int getContinCounter() {
+		return bufferId[3] & 0x0F;
 	}
 	
 	private static boolean contains(final int[] arr, final int key) {
 	    return Arrays.stream(arr).anyMatch(i -> i == key);
 	}
 
-	private static boolean hasSyncByte() {
+	final private static boolean hasSyncByte() {
 		return bufferId[0] == 0x47;
 	}
 	
@@ -98,7 +107,7 @@ public class DvbReader {
 		return bufferId[3] & 0xf;
 	}
 	
-	private static int getPid() {
+	final private static int getPid() {
 		return ((0b00011111 & (byte)bufferId[1])<<8) | (0xFF & bufferId[2]);
 	};
 	
@@ -106,40 +115,64 @@ public class DvbReader {
 		return (bufferId[1] & 0b01000000) != 0;
 	}
 	
-	private static int getPayloadPointer() {
+	public static int getPayloadPointer() {
 		return bufferPayloadPointer[0] & 0xFF;
 	}
+	
+	static int tspacket=0;
 
 	/** Reads transport stream to begin of the first packet,
 	 *  thats PID founds on array @pidfilter.*/  
 	public static int seekPid(final int[] pidfilter) {
 
 		//assert(dataleft==0): "dataleft must be zero, but dataleft = " + dataleft;
-		boolean continues=true;
 		
 		while(true) {
 			
 			dataleft = DvbReader.TS_PACKET_SIZE;
 			
-			if(!readId()) {
+			if(!readId()) { ////////////////////7
 				return 0;
 			}	
+			
+			tspacket++;
 			
 			if(hasSyncByte()){	
 				
 				currentPID = getPid();
 				
+
+				
 				if(contains(pidfilter, currentPID)) {
+					
+					System.out.print("[Packet in "
+							+ "0x" + Integer.toHexString(DvbReader.getReadOffset()-HEADER_SIZE)
+							+ " - "+DvbReader.getIdAsHex()
+							+ ", pid 0x" + Integer.toHexString(currentPID)							
+							);
+					
 					//System.out.println(getIdAsHex() + " (pid=" + pid + ")");
+					
+					//Jump to Payload Pointer
 					if(hasPayloadPointer()) {
-						
 						assert(read(bufferPayloadPointer));
-					}					
+						System.out.print(", Paystart " + getPayloadPointer());
+					}
+					
+					System.out.println("] ");
+					
 					break;
 				}
 				
-				continues=false;
+				
+				//Read to end of packet
+				//assert(readLeft());
+				
+				assert(read(bufferPayload));
+
 			}
+			
+			//assert(dataleft==PAYLOAD_SIZE): "dataleft must be zero, but dataleft = " + dataleft;
 
 		}
 
@@ -235,9 +268,9 @@ public class DvbReader {
 		left = new byte[dataleft];
 		boolean ok = read(left);
 		
-		
 		String s = new String(left, StandardCharsets.UTF_8);
-		System.out.println((left[0]!=0xFF ? SubtitleMonitor.ANSI_LRED : "")+s+SubtitleMonitor.ANSI_RESET);
+		System.out.println((left[0]!=0xFF ? SubtitleMonitor.ANSI_LRED : "") 
+				+ s + SubtitleMonitor.ANSI_RESET);
 		
 		return ok;
 		
@@ -245,6 +278,19 @@ public class DvbReader {
 	
 	public static byte[] getLeft() {
 		return left;
+	}
+
+	public static void toPayloadStart() {
+		//System.out.println("(jump " + getPayloadPointer() + ", " + continues + ")");
+
+		if(getPayloadPointer()>0) {
+			byte hopp[] = new byte[getPayloadPointer()];
+			assert(read(hopp));		  
+
+			String s = new String(hopp, StandardCharsets.UTF_8);
+			System.out.println(SubtitleMonitor.ANSI_LBLUE 
+					+ s + SubtitleMonitor.ANSI_RESET);
+		}
 	}
 
 }

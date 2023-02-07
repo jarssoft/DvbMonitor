@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
@@ -16,12 +17,13 @@ public class EPGReader {
 		if(isAsciiPrintable(c)) {
 			return c;
 		}else{
-			return '*';
+			return '.';
 		}
 	}
 
   /**********************/
 	
+  
   final private static int PAYLOADPOINTER_SIZE = 1;
   final private static int SECTION_HEADER_SIZE = 14;  
   final private static int EVENT_HEADER_SIZE = 12;
@@ -42,8 +44,12 @@ public class EPGReader {
 	  //System.out.println("\n >readFromPackets(" + buffer.length + ", " + start + ", " + readNow + ")");
 	  
 	  try {
-
-		  assert(System.in.read(buffer, start, readNow) == readNow);
+		  
+		  //assert(start + readNow < buffer.length);
+		  assert(start >= 0);
+		  assert(buffer.length > 0);
+		  assert(System.in.read(buffer, start, readNow) == readNow) : "End of source!";
+		  
 		  DvbReader.reduceDataleft(readNow);
 		  
 	  } catch (IOException e) {
@@ -68,21 +74,22 @@ public class EPGReader {
 	
   public static boolean nextPacket() {
 	  
-	  System.out.println("\n----[new packet]-----");
+	  //System.out.println("\n----[new packet]-----");
 	  
 	  if(DvbReader.seekPid(epgpids) == 0) {		  
 		  return false;
 	  }
+	  
 	  return true;
   }
   
   /**********************/
 
-  private static byte[] bufferPayloadPointer = new byte[PAYLOADPOINTER_SIZE];
-  private static byte[] bufferSection = new byte[SECTION_HEADER_SIZE];
+    private static byte[] bufferSection = new byte[SECTION_HEADER_SIZE];
 
   public static boolean readSection() {	  
-	  return readFromPackets(bufferPayloadPointer, 0) && readFromPackets(bufferSection, 0);
+	  return readFromPackets(bufferSection, 0);
+	  //return DvbReader.read(bufferSection);
   }
 
   public static String getPrefixAsHex() {
@@ -90,7 +97,7 @@ public class EPGReader {
   }
 
   public static int getTableID() {
-	  return bufferSection[0];//(decodeHamming(bufferPrefix[5])<<1) | (((byte)bufferPrefix[4] & (byte)0b00000001));
+	  return bufferSection[0]; //(decodeHamming(bufferPrefix[5])<<1) | (((byte)bufferPrefix[4] & (byte)0b00000001));
   }
 
   public static int getSectionLenght() {
@@ -220,7 +227,7 @@ public class EPGReader {
   
   /**********************/
   
-  private static byte[] bufferData = new byte[DATA_SIZE];
+  private static byte[] bufferData;
   
   private static final String[] nibbles = {
 		  "undefined", 
@@ -270,7 +277,7 @@ public class EPGReader {
   private static byte[] bufferCRC = new byte[CRC_SIZE];
   
   private static boolean readCRC() {
-	  return readFromPackets(bufferCRC,0);
+	  return readFromPackets(bufferCRC, 0);
   }
 
   /*********************/
@@ -281,16 +288,23 @@ public class EPGReader {
   public static int nextSection() {
 
 	  //Section starts on zeropoint of packet
-	  assert(DvbReader.getDataleft()==0);
+	  //assert(DvbReader.getDataleft()==0);
 	  
 	  //assert(section_length == SECTIONZERO):"section_length must be "+SECTIONZERO+", section_length == "+section_length;
+	  
+	  if(DvbReader.getDataleft()==0) {
+		  DvbReader.seekPid(epgpids);
+		  DvbReader.toPayloadStart();
+	  }
 	  
 	  assert(readSection());
 
 	  //System.out.println("  s"+section_length);
-	  System.out.println("Section: "+getPrefixAsHex());
-	  System.out.println("  Service: "+getServiceId());
+	  System.out.println("Section: " + getPrefixAsHex());
+	  System.out.println("  Service: " + getServiceId());
 
+	  assert(correctSection()) : "Incorrect section in $"+Integer.toHexString(DvbReader.getReadOffset())+"!";
+	  
 	  if(correctSection()) {
 		  return getSectionLenght();
 	  }else {
@@ -324,13 +338,17 @@ public class EPGReader {
 	  
   }
 
+  public static void main(String[] args) {
 
-
-public static void main(String[] args) {
-
-	  assert(DvbReader.HEADER_SIZE + PAYLOADPOINTER_SIZE + SECTION_HEADER_SIZE + EVENT_HEADER_SIZE + DATA_SIZE == DvbReader.TS_PACKET_SIZE);
+	  assert(DvbReader.HEADER_SIZE + PAYLOADPOINTER_SIZE + SECTION_HEADER_SIZE 
+			  + EVENT_HEADER_SIZE + DATA_SIZE == DvbReader.TS_PACKET_SIZE);
 
 	  boolean first_packet_detected = false;
+
+	  
+	  //First packet
+	  DvbReader.seekPid(epgpids);
+	  DvbReader.toPayloadStart();
 	  
 	  // TS loop
 	  while (true) {
@@ -346,7 +364,7 @@ public static void main(String[] args) {
 
 			  int eventLenght=nextEvent();
 			  section_length -= EVENT_HEADER_SIZE;
-			  
+
 			  if(eventLenght==0) {
 				  section_length=SECTIONZERO;
 			  }
@@ -359,15 +377,15 @@ public static void main(String[] args) {
 				  assert(readDescriptorTL());					  
 
 				  System.out.print("    Desc: (e"+eventLenght+") "+getDescriptorTLAsHex()+"  ");
-				  
+
 				  int descLenght = getDescriptorLenght();
-				  
+
 				  if(getDescriptorTag()==0x4d || getDescriptorTag()==0x54 
 						  || getDescriptorTag()==0x55
 						  || (getDescriptorTag() & 0xF0) == 0x50) {
-					  
+
 				  }
-				  
+
 				  assert(SAFEMODE || descLenght>0);
 				  bufferData = new byte[descLenght];
 
@@ -379,32 +397,37 @@ public static void main(String[] args) {
 				  //Print data of descriptor.
 
 				  if(getDescriptorTag() == 0x54) {
-					  
+
 					  System.out.print(getDataAsHex()+"  ");
 					  System.out.print(nibbles[(getContentNibble() & 0xF0) >> 4]);
 					  System.out.println();
-					  
+
 				  }else if(getDescriptorTag() == 0x55) {
-					  
+
 					  //System.out.print(getDataAsText()+"  "+getParentalRating());
 					  System.out.println();
-					  
+
 				  }else {
-					  
+
 					  System.out.println(getDataAsText());
-					  
+
 				  }
 			  }
 		  } 
 
 		  assert(readCRC());
-		  assert(DvbReader.readLeft());		  
 		  
+		 
+		  if(DvbReader.getDataleft() <= 5 
+				  && (188 - DvbReader.getDataleft()) != DvbReader.getPayloadPointer() + 5) {
+			  assert(DvbReader.readLeft());
+		  }
+
 		  assert(SAFEMODE 
 				  || first_packet_detected==false 
 				  || DvbReader.getLeft().length==0 
 				  || (DvbReader.getLeft()[0] & 0xFF) == 0xFF);
-				  
+
 	  }
   }
 }
