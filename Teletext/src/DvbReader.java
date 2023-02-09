@@ -146,21 +146,23 @@ public class DvbReader {
 				
 				if(contains(pidfilter, currentPID)) {
 					
+					/*
 					System.out.print("[Packet in "
 							+ "0x" + Integer.toHexString(DvbReader.getReadOffset()-HEADER_SIZE)
 							+ " - "+DvbReader.getIdAsHex()
 							+ ", pid 0x" + Integer.toHexString(currentPID)							
 							);
+							*/
 					
 					//System.out.println(getIdAsHex() + " (pid=" + pid + ")");
 					
 					//Jump to Payload Pointer
 					if(containsNewUnit()) {
 						assert(read(bufferPayloadPointer));
-						System.out.print(", Paystart " + getPayloadPointer());
+						//System.out.print(", Paystart " + getPayloadPointer());
 					}
 					
-					System.out.println("] ");
+					//System.out.println("] ");
 					
 					break;
 				}

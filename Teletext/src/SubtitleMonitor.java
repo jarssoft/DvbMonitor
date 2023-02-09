@@ -142,13 +142,13 @@ public class SubtitleMonitor {
 					}
 				}
 			
-				//System.out.println(ANSI_WHITE + date.format(dateFormat) + " " + channels[id] + lc.content);
+				//System.out.println(ANSI_WHITE + date.format(dateFormat) + " " + channels[id] + ">" + lc.content);
 				
 				caches[id].add(lc.content);
 				
 			}
 								
-			for(int id: new int[]{0, 1, 2, 3}) {
+			for(int id: new int[] {0, 1, 2, 3}) {
 
 				if(caches[id].index >= 10 || 
 						(caches[id].time.until(date, ChronoUnit.SECONDS) >= 0 

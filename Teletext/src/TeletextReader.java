@@ -36,7 +36,8 @@ public class TeletextReader {
 
   /**********************/
     
-  final private static int PREFIX_SIZE = 6; 
+  final private static int STUFF_SIZE = 1;
+  final private static int PREFIX_SIZE = 5; 
   final private static int ADDRESS_SIZE = 8;
   final private static int DATA_SIZE = 40;
   
@@ -50,6 +51,9 @@ public class TeletextReader {
 		  if(DvbReader.seekPid(teletextpids) == 0) {
 			  return false;
 		  }
+		  
+
+				  
 	  }
 	  
 	  if(!readPrefix()) {
@@ -64,9 +68,15 @@ public class TeletextReader {
   
   /**********************/
   
+  private static byte[] bufferStuff = new byte[STUFF_SIZE];
   private static byte[] bufferPrefix = new byte[PREFIX_SIZE];
   
   public static boolean readPrefix() {
+	  
+	  if(DvbReader.getDataleft()!=183) {
+		  DvbReader.read(bufferStuff);
+	  }
+	  
 	  bufferData = new byte[DATA_SIZE];
 	  return DvbReader.read(bufferPrefix);
   }
@@ -76,11 +86,11 @@ public class TeletextReader {
   }
   
   public static int getY() {
-	  return (decodeHamming(bufferPrefix[5])<<1) | (((byte)bufferPrefix[4] & (byte)0b00000001));
+	  return (decodeHamming(bufferPrefix[4])<<1) | (((byte)bufferPrefix[3] & (byte)0b00000001));
   }
   
   public static int getMagazine() {
-	  int magazine = decodeHamming(bufferPrefix[4]) & 0b0111;
+	  int magazine = decodeHamming(bufferPrefix[3]) & 0b0111;
 	  if(magazine==0) {
 		  magazine=8;
 	  } 
@@ -89,7 +99,7 @@ public class TeletextReader {
   }
   
   public static boolean isVisible() {
-	  return bufferPrefix[3] == (byte)0xe4 && getY() <= 24;
+	  return bufferPrefix[2] == (byte)0xe4 && getY() <= 24;
   }
   
   /**********************/
@@ -119,7 +129,7 @@ public class TeletextReader {
   private static byte[] bufferData = null;
   
   public static boolean readData() {
-	  assert(bufferData!=null);
+	  assert(bufferData != null);
 	  return DvbReader.read(bufferData);
   }
     
