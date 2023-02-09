@@ -304,16 +304,26 @@ public class EPGReader {
   public static int nextSection() {
 
 	  if(DvbReader.getDataleft()==0) {
-		  DvbReader.seekPid(epgpids);
+		  
+		  //Find place of section
+		  
+		  do {
+			  DvbReader.seekPid(epgpids);
+		  }while(!DvbReader.containsNewUnit());
+		  
 		  DvbReader.toPayloadStart();
+		  
 	  }
 	  
-	  do {		  
+	  //Read section
+	  //do {		  
 		  assert(readSection());
 		  System.out.println("Section: " + getPrefixAsHex()+", correct: " +validSection()+", lenght: "+getSectionLenght());
 		  System.out.println("  Service: " + getServiceId());
 
-	  } while(!validSection());
+	  //} while(!validSection());
+		  
+		  assert(validSection());
 	  
 	  return getSectionLenght();
   }
@@ -346,6 +356,8 @@ public class EPGReader {
 
 	  assert(DvbReader.HEADER_SIZE + PAYLOADPOINTER_SIZE + SECTION_HEADER_SIZE 
 			  + EVENT_HEADER_SIZE + DATA_SIZE == DvbReader.TS_PACKET_SIZE);
+	  
+
 	  
 	  // TS loop
 	  while (true) {

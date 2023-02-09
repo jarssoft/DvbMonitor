@@ -111,7 +111,8 @@ public class DvbReader {
 		return ((0b00011111 & (byte)bufferId[1])<<8) | (0xFF & bufferId[2]);
 	};
 	
-	private static boolean hasPayloadPointer() {
+	/** Set when this packet contains the first byte of a new payload unit. */
+	public static boolean containsNewUnit() {
 		return (bufferId[1] & 0b01000000) != 0;
 	}
 	
@@ -154,7 +155,7 @@ public class DvbReader {
 					//System.out.println(getIdAsHex() + " (pid=" + pid + ")");
 					
 					//Jump to Payload Pointer
-					if(hasPayloadPointer()) {
+					if(containsNewUnit()) {
 						assert(read(bufferPayloadPointer));
 						System.out.print(", Paystart " + getPayloadPointer());
 					}
@@ -238,7 +239,7 @@ public class DvbReader {
 				
 				System.out.print("  pid:"+pid+" ");
 				
-				if(hasPayloadPointer()) {
+				if(containsNewUnit()) {
 					System.out.print(", payload:"+getPayloadPointer()+" ");
 				}else {
 					bufferPayloadPointer[0]=0;
@@ -285,7 +286,7 @@ public class DvbReader {
 	public static void toPayloadStart() {
 		//System.out.println("(jump " + getPayloadPointer() + ", " + continues + ")");
 
-		if(hasPayloadPointer()) {
+		if(containsNewUnit()) {
 			if(getPayloadPointer()>0) {
 				byte hopp[] = new byte[getPayloadPointer()];
 				assert(read(hopp));		  
