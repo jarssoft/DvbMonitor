@@ -18,7 +18,7 @@ public class DvbReader {
 		return currentPID;
 	}
 
-	private static int dataleft=TS_PACKET_SIZE;
+	private static int dataleft=0;//TS_PACKET_SIZE;
 	  
 	public static int getDataleft() {
 		return dataleft;
