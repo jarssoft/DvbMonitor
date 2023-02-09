@@ -240,6 +240,8 @@ public class DvbReader {
 				
 				if(hasPayloadPointer()) {
 					System.out.print(", payload:"+getPayloadPointer()+" ");
+				}else {
+					bufferPayloadPointer[0]=0;
 				}
 								
 				if(readLeft()==false) {
@@ -283,13 +285,15 @@ public class DvbReader {
 	public static void toPayloadStart() {
 		//System.out.println("(jump " + getPayloadPointer() + ", " + continues + ")");
 
-		if(getPayloadPointer()>0) {
-			byte hopp[] = new byte[getPayloadPointer()];
-			assert(read(hopp));		  
-
-			String s = new String(hopp, StandardCharsets.UTF_8);
-			System.out.println(SubtitleMonitor.ANSI_LBLUE 
-					+ s + SubtitleMonitor.ANSI_RESET);
+		if(hasPayloadPointer()) {
+			if(getPayloadPointer()>0) {
+				byte hopp[] = new byte[getPayloadPointer()];
+				assert(read(hopp));		  
+	
+				String s = new String(hopp, StandardCharsets.UTF_8);
+				System.out.println(SubtitleMonitor.ANSI_LBLUE 
+						+ s + SubtitleMonitor.ANSI_RESET);
+			}
 		}
 	}
 
