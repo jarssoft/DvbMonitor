@@ -20,6 +20,8 @@ public class EPGMonitor {
 
 	public void descriptor(int tag, byte[] data) {
 		
+		  System.out.print("    Desc: (e"+EPGReader.Event.getDescriptorLoopLenght()+") " + DvbReader.byteBuffertoHex(EPGReader.DescriptorTL.buffer) + "  ");
+		
 		  if(tag == 0x54) {
 
 			  System.err.print(DvbReader.byteBuffertoHex(data)+"  ");

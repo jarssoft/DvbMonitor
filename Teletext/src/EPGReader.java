@@ -345,8 +345,6 @@ public class EPGReader {
 
 				  assert(readFromPackets(DescriptorTL.buffer, 0 ));					  
 
-				  System.out.print("    Desc: (e"+eventLenght+") " + DvbReader.byteBuffertoHex(DescriptorTL.buffer) + "  ");
-
 				  int descLenght = DescriptorTL.getLenght();
 
 				  assert(SAFEMODE || descLenght>0);
