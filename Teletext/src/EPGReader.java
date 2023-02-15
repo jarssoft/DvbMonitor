@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
@@ -300,6 +301,65 @@ public class EPGReader {
 			}
 			return result.toString();
 			
+		}
+		
+		public static String getShortEventDescriptorLang() {
+
+			if(buffer.length>=3) {
+				return new String(buffer, 0, 3);
+			}else {
+				return null;
+			}
+
+		}
+		
+		public static String getShortEventDescriptorName() {
+
+			  int enStart = 4;
+			  if(buffer.length > enStart) {					  
+				  
+				  int enCharTable = 0;
+				  
+				  if((buffer[enStart] & 0xFF) < 0x20) {
+					  enCharTable=buffer[4];
+					  enStart+=1;
+				  }
+				  
+				  try {
+					  return new String(buffer, enStart, 4+buffer[3]-enStart, "ISO-8859-9");
+				  } catch (UnsupportedEncodingException e) {
+					  return null;
+				  }
+
+			  }else {
+				  return null;
+			  }
+
+		}
+		
+		public static String getShortEventDescriptorText() {
+			
+			  int tStart = 4 + buffer[3] + 1;
+			  
+			  if(buffer.length > tStart) {		
+				  
+				  int tCharTable = 0;
+				  
+				  if((buffer[tStart] & 0xFF) < 0x20) {
+					  tCharTable=buffer[tStart];
+					  tStart+=1;
+				  }
+				  
+				  try {
+					  return new String(buffer, tStart, buffer.length - tStart, "ISO-8859-9");
+				  } catch (UnsupportedEncodingException e) {
+					  e.printStackTrace();
+					  return null;
+				  }
+				  
+			  }else {
+				  return null;
+			  }
 		}
   }
 
