@@ -49,9 +49,8 @@ public class EPGMonitor {
 				  String lang = asString.substring(0,3);
 				  System.out.println(DESCIDENT+"Lang:  "+lang);
 				  
-				  if(data.length>4) {
-					  
-					  int start = 4;
+				  int start = 4;
+				  if(data.length > start) {					  
 					  int codepage = 0;
 					  if((data[start] & 0xFF) < 0x20) {
 						  codepage=data[4];
@@ -62,9 +61,8 @@ public class EPGMonitor {
 					  String title = asString.substring(start, 4+data[3]);
 					  System.out.println(DESCIDENT+"Title: "+title);
 					  
-					  if(data.length>4+data[3]+1) {		
-						  
-						  int dstart = 4+data[3]+1;
+					  int dstart = 4+data[3]+1;
+					  if(data.length > dstart) {								  						  
 						  int dcodepage = 0;
 						  if((data[dstart] & 0xFF) < 0x20) {
 							  dcodepage=data[dstart];
