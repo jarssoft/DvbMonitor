@@ -18,25 +18,88 @@ public class EPGMonitor {
 		
 	}
 
+	final private String DESCIDENT = "      ";
+	
 	public void descriptor(int tag, byte[] data) {
 		
-		  System.out.print("    Desc: (e"+EPGReader.Event.getDescriptorLoopLenght()+") " + DvbReader.byteBuffertoHex(EPGReader.DescriptorTL.buffer) + "  ");
+		  System.out.println("    Desc: (e"+EPGReader.Event.getDescriptorLoopLenght()+") " + DvbReader.byteBuffertoHex(EPGReader.DescriptorTL.buffer) + "  ");
 		
 		  if(tag == 0x54) {
 
-			  System.err.print(DvbReader.byteBuffertoHex(data)+"  ");
+			  System.err.print(DESCIDENT+DvbReader.byteBuffertoHex(data)+"  ");
 			  System.out.print(EPGReader.Data.nibbles[(EPGReader.Data.getContentNibble(data) & 0xF0) >> 4]);
 			  System.out.println();
 
 		  }else if(tag == 0x55) {
 
-			  //System.out.print(getDataAsText()+"  "+getParentalRating());
-			  System.out.println(EPGReader.Data.getDataAsText(data));
+			  System.out.println(DESCIDENT+EPGReader.Data.getDataAsText(data));
+			  
+		  }else if(tag == 0x4d) {
+
+			  String asString = EPGReader.Data.getDataAsText(data);
+			  
+			  if(data.length>=3) {
+
+				  String lang = asString.substring(0,3);
+				  System.out.println(DESCIDENT+"Lang:  "+lang);
+				  
+				  if(data.length>4) {
+					  
+					  int start = 4;
+					  int codepage = 0;
+					  if((data[start] & 0xFF) < 0x20) {
+						  codepage=data[4];
+						  start+=1;						  
+						  System.out.println(DESCIDENT+"Codepage.Title: "+codepage);
+					  }
+		
+					  String title = asString.substring(start, 4+data[3]);
+					  System.out.println(DESCIDENT+"Title: "+title);
+					  
+					  if(data.length>4+data[3]+1) {		
+						  
+						  int dstart = 4+data[3]+1;
+						  int dcodepage = 0;
+						  if((data[dstart] & 0xFF) < 0x20) {
+							  dcodepage=data[dstart];
+							  dstart+=1;							  
+							  System.out.println(DESCIDENT+"Codepage.Desc: "+codepage);
+						  }
+						  
+						  String desc = asString.substring(dstart, data.length);
+						  System.out.println(DESCIDENT+"Desc:  "+desc);
+					  }
+					  
+				  }			  
+			  
+			  }
+			  
+			  //System.out.println(asString);
+		  }else if(tag == 0x4e) {
+
+			  String asString = EPGReader.Data.getDataAsText(data);
+			  /*
+			  if(data.length>=3) {
+				  System.out.println(asString);
+				  
+				  String lang = asString.substring(0,3);
+				  System.out.println("      lang:  "+lang);
+				  
+				  if(data.length>4) {
+		
+					  String title = asString.substring(4, 4+data[3]);
+					  System.out.println("      text: "+title);
+					  
+				  }			  
+			  
+			  }
+			  */
+			  System.out.println(DESCIDENT+asString);
 
 		  }else {
-
-			  System.out.println(EPGReader.Data.getDataAsText(data));
-
+			  
+			  System.out.println(DESCIDENT+EPGReader.Data.getDataAsText(data));
+			  
 		  }
 	}
 
