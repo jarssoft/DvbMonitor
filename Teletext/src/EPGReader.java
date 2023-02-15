@@ -303,14 +303,51 @@ public class EPGReader {
 			
 		}
 		
-		public static String getShortEventDescriptorLang() {
-
+		public static int getParentalRatingDescriptorCountries() {
+			return buffer.length / 4;
+		}
+		
+		public static String getParentalRatingDescriptorLang(int n) {
+			assert(n<getParentalRatingDescriptorCountries());
+			int i = n * 4;
 			if(buffer.length>=3) {
-				return new String(buffer, 0, 3);
+				return new String(buffer, i, 3);
 			}else {
 				return null;
 			}
 
+		}
+		
+		// packing an array of 4 bytes to an int, big endian, clean code
+		private static int fromByteArray(byte[] bytes, int i) {			
+			return ((bytes[i+0] & 0xFF) << 16) | 
+					((bytes[i+1] & 0xFF) << 8) | 
+					((bytes[i+2] & 0xFF) << 0 ) ;
+		}
+		
+		public static int getParentalRatingDescriptorCountry(int n) {
+			assert(n<getParentalRatingDescriptorCountries());
+			
+			return fromByteArray(buffer, n*4);
+			
+		}
+		
+		public static int getParentalRatingDescriptorAge(int n) {
+			assert(n<getParentalRatingDescriptorCountries());
+			
+			int rating = buffer[n*4+3] & 0xFF;
+			if(rating >= 0x01 && rating <= 0x0F) {
+				return rating+3;
+			}else {
+				return 0;
+			}
+			
+		}
+		
+		public static String getShortEventDescriptorLang() {
+			
+			return getParentalRatingDescriptorLang(0);
+			
 		}
 		
 		public static String getShortEventDescriptorName() {

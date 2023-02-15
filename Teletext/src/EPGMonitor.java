@@ -26,37 +26,43 @@ public class EPGMonitor {
 
 		if(tag == 0x54) {
 
-			System.err.print(DESCIDENT + DvbReader.byteBuffertoHex(data) + "  ");
+			System.out.print(DESCIDENT + DvbReader.byteBuffertoHex(data) + "  ");
 			System.out.print(EPGReader.Data.nibbles[(EPGReader.Data.getContentNibble(data) & 0xF0) >> 4]);
 			System.out.println();
 
 		}else if(tag == 0x55) {
-
-			System.out.println(DESCIDENT+EPGReader.Data.getDataAsText(data));
+			
+			System.out.println(DESCIDENT + "Countries: " + EPGReader.Data.getParentalRatingDescriptorCountries());
+			for(int i=0;i<EPGReader.Data.getParentalRatingDescriptorCountries();i++){
+				int countryiso8859 = EPGReader.Data.getParentalRatingDescriptorCountry(i);
+				//if(countryiso8859 == 0x46494E || countryiso8859 == 0x66696e) {
+					System.out.println(DESCIDENT + "  Country: " + EPGReader.Data.getParentalRatingDescriptorLang(i));
+					System.out.println(DESCIDENT + "  Age:  " + EPGReader.Data.getParentalRatingDescriptorAge(i));
+				//}
+			}
 
 		}else if(tag == 0x4d) {
 
 			if(EPGReader.Data.getShortEventDescriptorLang()!=null) {
-				System.out.println(DESCIDENT + "Lang: "+EPGReader.Data.getShortEventDescriptorLang());
+				System.out.println(DESCIDENT + "Lang: " + EPGReader.Data.getShortEventDescriptorLang());
 			}
 
 			if(EPGReader.Data.getShortEventDescriptorName()!=null) {
-				System.out.println(DESCIDENT + "EventName: "+EPGReader.Data.getShortEventDescriptorName());
+				System.out.println(DESCIDENT + "EventName: " + EPGReader.Data.getShortEventDescriptorName());
 			}
 
 			if(EPGReader.Data.getShortEventDescriptorText()!=null) {
-				System.out.println(DESCIDENT + "Text: "+EPGReader.Data.getShortEventDescriptorText());
+				System.out.println(DESCIDENT + "Text: " + EPGReader.Data.getShortEventDescriptorText());
 			}			  
 
 		}else if(tag == 0x4e) {
 
 			String asString = EPGReader.Data.getDataAsText(data);
-
-			System.out.println(DESCIDENT+asString);
+			System.out.println(DESCIDENT + asString);
 
 		}else {
 
-			System.out.println(DESCIDENT+EPGReader.Data.getDataAsText(data));
+			System.out.println(DESCIDENT + EPGReader.Data.getDataAsText(data));
 
 		}
 	}
