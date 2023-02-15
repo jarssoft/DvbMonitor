@@ -237,7 +237,7 @@ public class EPGReader {
 
   static class Data {
 	  
-	  private static byte[] buffer;
+	  public static byte[] buffer;
 
 	  public static boolean read() {
 		  assert(buffer!=null);

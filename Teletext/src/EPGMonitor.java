@@ -15,19 +15,82 @@ public class EPGMonitor {
 		
 		System.out.println("  Event: " + DvbReader.byteBuffertoHex(EPGReader.Section.buffer));
 		System.out.println("    Starts: " + EPGReader.Event.getEventStart() 
-				+ ", Duration: " + EPGReader.Event.getEventDuration());
+							+ ", Duration: " + EPGReader.Event.getEventDuration());
 		
 	}
 
 	final private String DESCIDENT = "      ";
 	
-	public void descriptor(int tag, byte[] data) {
+	String getShortEventDescriptorLang() {
+
+		if(EPGReader.Data.buffer.length>=3) {
+			return  new String(EPGReader.Data.buffer, 0, 3);
+		}else {
+			return null;
+		}
+
+	}
+	
+	String getShortEventDescriptorName() {
+
+		  int enStart = 4;
+		  if(EPGReader.Data.buffer.length > enStart) {					  
+			  
+			  int enCharTable = 0;
+			  
+			  if((EPGReader.Data.buffer[enStart] & 0xFF) < 0x20) {
+				  enCharTable=EPGReader.Data.buffer[4];
+				  enStart+=1;
+			  }
+			  
+			  try {
+				  return new String(EPGReader.Data.buffer, enStart, 4+EPGReader.Data.buffer[3]-enStart, "ISO-8859-9");
+			  } catch (UnsupportedEncodingException e) {
+				  return null;
+			  }
+
+		  }else {
+			  
+			  return null;
+			  
+		  }
+
+	}
+	
+	String getShortEventDescriptorText() {
 		
-		  System.out.println("    Desc: (e"+EPGReader.Event.getDescriptorLoopLenght()+") " + DvbReader.byteBuffertoHex(EPGReader.DescriptorTL.buffer) + "  ");
+		  int tStart = 4 + EPGReader.Data.buffer[3] + 1;
+		  
+		  if(EPGReader.Data.buffer.length > tStart) {		
+			  
+			  int tCharTable = 0;
+			  
+			  if((EPGReader.Data.buffer[tStart] & 0xFF) < 0x20) {
+				  tCharTable=EPGReader.Data.buffer[tStart];
+				  tStart+=1;
+			  }
+			  
+			  try {
+				  return new String(EPGReader.Data.buffer, tStart, EPGReader.Data.buffer.length - tStart, "ISO-8859-9");
+			  } catch (UnsupportedEncodingException e) {
+				  e.printStackTrace();
+				  return null;
+			  }
+			  
+		  }else {
+			  
+			  return null;
+			  
+		  }
+	}
+	
+	 void descriptor(int tag, byte[] data) {
+		
+		  System.out.println("    Desc: (e"+EPGReader.Event.getDescriptorLoopLenght() + ") " + DvbReader.byteBuffertoHex(EPGReader.DescriptorTL.buffer) + "  ");
 		
 		  if(tag == 0x54) {
 
-			  System.err.print(DESCIDENT+DvbReader.byteBuffertoHex(data)+"  ");
+			  System.err.print(DESCIDENT + DvbReader.byteBuffertoHex(data) + "  ");
 			  System.out.print(EPGReader.Data.nibbles[(EPGReader.Data.getContentNibble(data) & 0xF0) >> 4]);
 			  System.out.println();
 
@@ -37,48 +100,18 @@ public class EPGMonitor {
 			  
 		  }else if(tag == 0x4d) {
 
-			  String asString="";
-			  try {
-				  asString = new String(data, "ISO-8859-9");
-			  } catch (UnsupportedEncodingException e) {
-				  e.printStackTrace();
+			  if(getShortEventDescriptorLang()!=null) {
+				  System.out.println(DESCIDENT + "Lang: "+getShortEventDescriptorLang());
 			  }
 			  
-			  if(data.length>=3) {
+			  if(getShortEventDescriptorName()!=null) {
+				  System.out.println(DESCIDENT + "EventName: "+getShortEventDescriptorName());
+			  }
+			  
+			  if(getShortEventDescriptorText()!=null) {
+				  System.out.println(DESCIDENT + "Text: "+getShortEventDescriptorText());
+			  }			  
 
-				  String lang = asString.substring(0,3);
-				  System.out.println(DESCIDENT+"Lang:  "+lang);
-				  
-				  int start = 4;
-				  if(data.length > start) {					  
-					  int codepage = 0;
-					  if((data[start] & 0xFF) < 0x20) {
-						  codepage=data[4];
-						  start+=1;						  
-						  System.out.println(DESCIDENT+"Codepage.Title: "+codepage);
-					  }
-		
-					  String title = asString.substring(start, 4+data[3]);
-					  System.out.println(DESCIDENT+"Title: "+title);
-					  
-					  int dstart = 4+data[3]+1;
-					  if(data.length > dstart) {								  						  
-						  int dcodepage = 0;
-						  if((data[dstart] & 0xFF) < 0x20) {
-							  dcodepage=data[dstart];
-							  dstart+=1;							  
-							  System.out.println(DESCIDENT+"Codepage.Desc: "+dcodepage);
-						  }
-						  
-						  String desc = asString.substring(dstart, data.length);
-						  System.out.println(DESCIDENT+"Desc:  "+desc);
-					  }
-					  
-				  }			  
-			  
-			  }
-			  
-			  //System.out.println(asString);
 		  }else if(tag == 0x4e) {
 
 			  String asString = EPGReader.Data.getDataAsText(data);
