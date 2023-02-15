@@ -1,3 +1,4 @@
+import java.io.UnsupportedEncodingException;
 
 public class EPGMonitor {
 
@@ -36,7 +37,12 @@ public class EPGMonitor {
 			  
 		  }else if(tag == 0x4d) {
 
-			  String asString = EPGReader.Data.getDataAsText(data);
+			  String asString="";
+			  try {
+				  asString = new String(data, "ISO-8859-9");
+			  } catch (UnsupportedEncodingException e) {
+				  e.printStackTrace();
+			  }
 			  
 			  if(data.length>=3) {
 
@@ -63,7 +69,7 @@ public class EPGMonitor {
 						  if((data[dstart] & 0xFF) < 0x20) {
 							  dcodepage=data[dstart];
 							  dstart+=1;							  
-							  System.out.println(DESCIDENT+"Codepage.Desc: "+codepage);
+							  System.out.println(DESCIDENT+"Codepage.Desc: "+dcodepage);
 						  }
 						  
 						  String desc = asString.substring(dstart, data.length);
