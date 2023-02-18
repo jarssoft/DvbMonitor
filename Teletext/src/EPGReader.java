@@ -127,7 +127,7 @@ public class EPGReader {
 
 					// Print data of descriptor.
 
-					monitor.descriptor(DescriptorTL.getTag(), Descriptor.buffer);
+					monitor.descriptor(DescriptorTL.getTag());
 
 				}
 			} 

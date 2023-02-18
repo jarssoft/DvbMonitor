@@ -21,19 +21,19 @@ public class EPGMonitor {
 
 	final private String DESCIDENT = "      ";
 
-	void descriptor(int tag, byte[] data) {
+	void descriptor(int tag) {
 
 		System.out.println("    Desc: (e"+EPGEvent.getDescriptorLoopLenght() + ") " + DvbReader.byteBuffertoHex(DescriptorTL.buffer) + "  ");
 
 		if(tag == ContentDescriptor.TAG) {
 
-			System.out.print(DESCIDENT + DvbReader.byteBuffertoHex(data) + "  ");
-			System.out.print(ContentDescriptor.nibbles[(ContentDescriptor.getContentNibble(data) & 0xF0) >> 4]);
+			System.out.print(DESCIDENT + DvbReader.byteBuffertoHex(Descriptor.buffer) + "  ");
+			System.out.print(ContentDescriptor.nibbles[(ContentDescriptor.getContentNibble(Descriptor.buffer) & 0xF0) >> 4]);
 			System.out.println();
 
 		}else if(tag == ParentalRatingDescriptor.TAG) {
 			
-			System.out.println(DESCIDENT + DvbReader.byteBuffertoHex(data));
+			System.out.println(DESCIDENT + DvbReader.byteBuffertoHex(Descriptor.buffer));
 			
 			System.out.println(DESCIDENT + "Countries: " + ParentalRatingDescriptor.getCountries());
 			
@@ -65,7 +65,7 @@ public class EPGMonitor {
 
 		}else {
 
-			System.out.println(DESCIDENT + Descriptor.getDataAsText(data));
+			System.out.println(DESCIDENT + Descriptor.getDataAsText(Descriptor.buffer));
 
 		}
 	}
