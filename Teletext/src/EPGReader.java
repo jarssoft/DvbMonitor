@@ -136,16 +136,16 @@ public class EPGReader {
 					int descLenght = DescriptorTL.getLenght();
 
 					assert(SAFEMODE || descLenght>0);
-					EPGData.buffer = new byte[descLenght];
+					Descriptor.buffer = new byte[descLenght];
 
-					eventLenght -= (DESCRIPTOR_TAG_AND_LENGHT_SIZE + EPGData.buffer.length);
-					section_length -= (DESCRIPTOR_TAG_AND_LENGHT_SIZE + EPGData.buffer.length);
+					eventLenght -= (DESCRIPTOR_TAG_AND_LENGHT_SIZE + Descriptor.buffer.length);
+					section_length -= (DESCRIPTOR_TAG_AND_LENGHT_SIZE + Descriptor.buffer.length);
 
-					assert(EPGData.read());
+					assert(Descriptor.read());
 
 					// Print data of descriptor.
 
-					monitor.descriptor(DescriptorTL.getTag(), EPGData.buffer);
+					monitor.descriptor(DescriptorTL.getTag(), Descriptor.buffer);
 
 				}
 			} 

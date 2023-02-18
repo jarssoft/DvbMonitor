@@ -27,47 +27,49 @@ public class EPGMonitor {
 		if(tag == 0x54) {
 
 			System.out.print(DESCIDENT + DvbReader.byteBuffertoHex(data) + "  ");
-			System.out.print(EPGData.nibbles[(EPGData.getContentNibble(data) & 0xF0) >> 4]);
+			System.out.print(ContentDescriptor.nibbles[(ContentDescriptor.getContentNibble(data) & 0xF0) >> 4]);
 			System.out.println();
 
 		}else if(tag == 0x55) {
 			
 			System.out.println(DESCIDENT + DvbReader.byteBuffertoHex(data));
 			
-			System.out.println(DESCIDENT + "Countries: " + EPGData.getParentalRatingDescriptorCountries());
+			System.out.println(DESCIDENT + "Countries: " + ParentalRatingDescriptor.getCountries());
 			
-			for(int i=0;i<EPGData.getParentalRatingDescriptorCountries();i++){					
-				System.out.println(DESCIDENT + "  Country: " + EPGData.getParentalRatingDescriptorLang(i));
-				System.out.println(DESCIDENT + "  Age: " + EPGData.getParentalRatingDescriptorAge(i));				
+			for(int i=0;i<ParentalRatingDescriptor.getCountries();i++){					
+				System.out.println(DESCIDENT + "  Country: " + ParentalRatingDescriptor.getLang(i));
+				System.out.println(DESCIDENT + "  Age: " + ParentalRatingDescriptor.getAge(i));				
 			}
 			
-			System.out.println(DESCIDENT + "  Age(FIN): " + EPGData.getParentalRatingDescriptorByBountry(EPGData.COUNTRY_FIN));
+			System.out.println(DESCIDENT + "  Age(FIN): " + ParentalRatingDescriptor.getByBountry(Descriptor.COUNTRY_FIN));
 			
-
 		}else if(tag == 0x4d) {
 
-			//if(EPGReader.Data.getShortEventDescriptorLangCode()==EPGReader.Data.COUNTRY_fin) {
-				if(EPGData.getShortEventDescriptorLang()!=null) {
-					System.out.println(DESCIDENT + "Lang: " + EPGData.getShortEventDescriptorLang());
+			//if(ShortEventDescriptor.getLangCode()==EPGData.COUNTRY_fin) {
+				if(ShortEventDescriptor.getLang()!=null) {
+					System.out.println(DESCIDENT 
+							+ "Lang: " + ShortEventDescriptor.getLang());
 				}
 	
-				if(EPGData.getShortEventDescriptorName()!=null) {
-					System.out.println(DESCIDENT + "EventName: " + EPGData.getShortEventDescriptorName());
+				if(ShortEventDescriptor.getName()!=null) {
+					System.out.println(DESCIDENT 
+							+ "EventName: " + ShortEventDescriptor.getName());
 				}
 	
-				if(EPGData.getShortEventDescriptorText()!=null) {
-					System.out.println(DESCIDENT + "Text: " + EPGData.getShortEventDescriptorText());
+				if(ShortEventDescriptor.getText()!=null) {
+					System.out.println(DESCIDENT 
+							+ "Text: " + ShortEventDescriptor.getText());
 				}			  
 			//}
 
 		}else if(tag == 0x4e) {
 
-			String asString = EPGData.getDataAsText(data);
+			String asString = Descriptor.getDataAsText(data);
 			System.out.println(DESCIDENT + asString);
 
 		}else {
 
-			System.out.println(DESCIDENT + EPGData.getDataAsText(data));
+			System.out.println(DESCIDENT + Descriptor.getDataAsText(data));
 
 		}
 	}
