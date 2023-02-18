@@ -13,8 +13,8 @@ public class EPGMonitor {
 	public void event() {
 
 		System.out.println("  Event: " + DvbReader.byteBuffertoHex(EPGReader.Section.buffer));
-		System.out.println("    Starts: " + EPGReader.Event.getEventStart() 
-				+ ", Duration: " + EPGReader.Event.getEventDuration());
+		System.out.println("    Starts: " + EPGEvent.getEventStart() 
+				+ ", Duration: " + EPGEvent.getEventDuration());
 
 	}
 
@@ -22,7 +22,7 @@ public class EPGMonitor {
 
 	void descriptor(int tag, byte[] data) {
 
-		System.out.println("    Desc: (e"+EPGReader.Event.getDescriptorLoopLenght() + ") " + DvbReader.byteBuffertoHex(EPGReader.DescriptorTL.buffer) + "  ");
+		System.out.println("    Desc: (e"+EPGEvent.getDescriptorLoopLenght() + ") " + DvbReader.byteBuffertoHex(EPGReader.DescriptorTL.buffer) + "  ");
 
 		if(tag == 0x54) {
 
