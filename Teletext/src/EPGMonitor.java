@@ -25,13 +25,13 @@ public class EPGMonitor {
 
 		System.out.println("    Desc: (e"+EPGEvent.getDescriptorLoopLenght() + ") " + DvbReader.byteBuffertoHex(DescriptorTL.buffer) + "  ");
 
-		if(tag == 0x54) {
+		if(tag == ContentDescriptor.TAG) {
 
 			System.out.print(DESCIDENT + DvbReader.byteBuffertoHex(data) + "  ");
 			System.out.print(ContentDescriptor.nibbles[(ContentDescriptor.getContentNibble(data) & 0xF0) >> 4]);
 			System.out.println();
 
-		}else if(tag == 0x55) {
+		}else if(tag == ParentalRatingDescriptor.TAG) {
 			
 			System.out.println(DESCIDENT + DvbReader.byteBuffertoHex(data));
 			
@@ -44,7 +44,7 @@ public class EPGMonitor {
 			
 			System.out.println(DESCIDENT + "  Age(FIN): " + ParentalRatingDescriptor.getByBountry(Descriptor.COUNTRY_FIN));
 			
-		}else if(tag == 0x4d) {
+		}else if(tag == ShortEventDescriptor.TAG) { 
 
 			//if(ShortEventDescriptor.getLangCode()==EPGData.COUNTRY_fin) {
 				if(ShortEventDescriptor.getLang()!=null) {
@@ -62,11 +62,6 @@ public class EPGMonitor {
 							+ "Text: " + ShortEventDescriptor.getText());
 				}			  
 			//}
-
-		}else if(tag == 0x4e) {
-
-			String asString = Descriptor.getDataAsText(data);
-			System.out.println(DESCIDENT + asString);
 
 		}else {
 

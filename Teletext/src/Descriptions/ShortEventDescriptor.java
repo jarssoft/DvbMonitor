@@ -3,6 +3,8 @@ import java.io.UnsupportedEncodingException;
 
 public class ShortEventDescriptor extends Descriptor {
 	
+	static final public int TAG = 0x4d;
+	
 	/** Returns ISO_639_language_code of short event descriptor as string. */
 	public static String getLang() {
 		return ParentalRatingDescriptor.getLang(0);

@@ -2,6 +2,8 @@ package Descriptions;
 
 public class ParentalRatingDescriptor extends Descriptor {
 	
+	static final public int TAG = 0x55;
+	
 	/** Returns amount of countries of rating values. */
 	public static int getCountries() {
 		return buffer.length / 4;

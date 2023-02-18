@@ -2,6 +2,8 @@ package Descriptions;
 
 public class ContentDescriptor extends Descriptor {
 
+	static final public int TAG = 0x54;
+	
 	public static final String[] nibbles = {
 
 			"undefined", 
