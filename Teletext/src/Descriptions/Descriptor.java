@@ -1,3 +1,4 @@
+package Descriptions;
 
 public class Descriptor {
 
@@ -5,12 +6,6 @@ public class Descriptor {
 	public static final int COUNTRY_fin = 0x66696e;
 
 	public static byte[] buffer;
-
-	public static boolean read() {
-		assert(buffer!=null);
-
-		return EPGReader.readFromPackets(buffer,0);
-	}
 
 	private static boolean isAsciiPrintable(char ch) {
 

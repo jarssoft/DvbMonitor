@@ -1,3 +1,4 @@
+package Descriptions;
 
 public class ContentDescriptor extends Descriptor {
 

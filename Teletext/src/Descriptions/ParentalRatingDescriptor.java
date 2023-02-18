@@ -1,3 +1,4 @@
+package Descriptions;
 
 public class ParentalRatingDescriptor extends Descriptor {
 	

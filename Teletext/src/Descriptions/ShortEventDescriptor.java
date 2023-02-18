@@ -1,11 +1,11 @@
+package Descriptions;
 import java.io.UnsupportedEncodingException;
 
 public class ShortEventDescriptor extends Descriptor {
+	
 	/** Returns ISO_639_language_code of short event descriptor as string. */
 	public static String getLang() {
-
 		return ParentalRatingDescriptor.getLang(0);
-
 	}
 	
 	/** Returns ISO_639_language_code of short event descriptor as integer. */

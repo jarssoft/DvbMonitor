@@ -1,5 +1,5 @@
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import Descriptions.Descriptor;
 
 public class EPGReader {
 
@@ -67,6 +67,12 @@ public class EPGReader {
 
 		return true;
 	}
+	
+	public static boolean readBuffer(byte[] buffer) {
+		assert(buffer!=null);
+
+		return EPGReader.readFromPackets(buffer,0);
+	}
 
 	public static boolean nextPacket() {
 
@@ -117,7 +123,7 @@ public class EPGReader {
 					eventLenght -= (DescriptorTL.BYTESIZE + Descriptor.buffer.length);
 					section_length -= (DescriptorTL.BYTESIZE + Descriptor.buffer.length);
 
-					assert(Descriptor.read());
+					assert(readBuffer(Descriptor.buffer));
 
 					// Print data of descriptor.
 

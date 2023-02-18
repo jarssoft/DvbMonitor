@@ -1,3 +1,4 @@
+import Descriptions.*;
 
 public class EPGMonitor {
 

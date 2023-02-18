@@ -13,7 +13,7 @@ class EPGEvent {
 
 	static boolean isValid() {
 		//Rude way to check is event is valid.
-		return ((buffer[2] & 0xFF) >= 0xD6 && (buffer[2] & 0xFF) <= 0xF0);
+		return ((buffer[2] & 0xFF) >= 0xD6 && (buffer[2] & 0xFF) <= 0xF0); 
 	}
 
 	static int next() {
