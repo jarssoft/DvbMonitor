@@ -4,12 +4,11 @@ import java.io.UnsupportedEncodingException;
 public class EPGReader {
 
 	final private static int PAYLOADPOINTER_SIZE = 1;
-	final private static int SECTION_HEADER_SIZE = 14;  
 	final private static int DESCRIPTOR_TAG_AND_LENGHT_SIZE = 2;
-	final private static int DATA_SIZE = DvbReader.PAYLOAD_SIZE - PAYLOADPOINTER_SIZE - SECTION_HEADER_SIZE - EPGEvent.BYTESIZE;
+	final private static int DATA_SIZE = DvbReader.PAYLOAD_SIZE - PAYLOADPOINTER_SIZE - EPGSection.BYTESIZE - EPGEvent.BYTESIZE;
 	final private static int CRC_SIZE = 4;
 
-	final private static int epgpids[] = {0x12};
+	final static int epgpids[] = {0x12};
 
 	static EPGMonitor monitor;
 
@@ -36,7 +35,7 @@ public class EPGReader {
 
 			// If 0xFF read then there is stuffing and no buffer read in this packet
 			// (ETSI EN 300 468, 5.1.2)
-			if((buffer[start] & 0xFF) == 0xFF && buffer.length == SECTION_HEADER_SIZE) {
+			if((buffer[start] & 0xFF) == 0xFF && buffer.length == EPGSection.BYTESIZE) {
 
 				//All bytes are 0xFF
 				assert((buffer[start+readNow-1] & 0xFF) == 0xFF);
@@ -79,55 +78,6 @@ public class EPGReader {
 		return true;
 	}
 
-	static class Section {
-
-		public static byte[] buffer = new byte[SECTION_HEADER_SIZE];
-
-		public static int getTableID() {
-			return buffer[0];
-		}
-
-		public static int getLenght() {
-			return (((buffer[1] & (byte)0x0F)) << 8) | (buffer[2] & 0xFF);
-		}
-
-		public static boolean isValid() {
-			int ti = getTableID();	
-
-			return ((ti==0x4e || ti==0x4f || (ti & 0xF0)==0x50 || (ti & 0xF0)==0x60)
-					&& getLenght()>=SECTIONZERO);
-		}
-
-		public static int getServiceId() {  
-			return (((buffer[3] & (byte)0xFF)) << 8) + (buffer[4] & 0xFF); 
-		}
-
-		public static int next() {
-
-			if(DvbReader.getDataleft()==0) {
-
-				//Find place of section
-
-				do {
-					DvbReader.seekPid(epgpids);
-				} while(!DvbReader.containsNewUnit());
-
-				DvbReader.toPayloadStart();
-
-			}
-
-			//Read section
-
-			assert(readFromPackets(buffer, 0));
-
-			monitor.section();
-
-			assert(isValid());
-
-			return getLenght();
-		}
-	}
-
 	static class DescriptorTL {
 
 		public static byte[] buffer = new byte[DESCRIPTOR_TAG_AND_LENGHT_SIZE];
@@ -151,20 +101,20 @@ public class EPGReader {
 
 	}
 
-	private static int SECTIONZERO = 15;
+	static int SECTIONZERO = 15;
 	private static boolean SAFEMODE = true; 
 
 	public static void readEPG(EPGMonitor monitor) {
 
 		EPGReader.monitor = monitor;
 
-		assert(DvbReader.HEADER_SIZE + PAYLOADPOINTER_SIZE + SECTION_HEADER_SIZE 
+		assert(DvbReader.HEADER_SIZE + PAYLOADPOINTER_SIZE + EPGSection.BYTESIZE 
 				+ EPGEvent.BYTESIZE + DATA_SIZE == DvbReader.TS_PACKET_SIZE);
 
 		// TS loop
 		while (true) {
 
-			int section_length = Section.next();
+			int section_length = EPGSection.next();
 
 			// Iterate events
 			while(section_length > SECTIONZERO) {

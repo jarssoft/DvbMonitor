@@ -3,16 +3,16 @@ public class EPGMonitor {
 
 	public void section() {
 
-		System.out.println("Section: " + DvbReader.byteBuffertoHex(EPGReader.Section.buffer)
-				+ ", correct: " +EPGReader.Section.isValid()
-				+ ", lenght: "+EPGReader.Section.getLenght());
-		System.out.println("  Service: " + EPGReader.Section.getServiceId());
+		System.out.println("Section: " + DvbReader.byteBuffertoHex(EPGSection.buffer)
+				+ ", correct: " +EPGSection.isValid()
+				+ ", lenght: "+EPGSection.getLenght());
+		System.out.println("  Service: " + EPGSection.getServiceId());
 
 	}
 
 	public void event() {
 
-		System.out.println("  Event: " + DvbReader.byteBuffertoHex(EPGReader.Section.buffer));
+		System.out.println("  Event: " + DvbReader.byteBuffertoHex(EPGSection.buffer));
 		System.out.println("    Starts: " + EPGEvent.getEventStart() 
 				+ ", Duration: " + EPGEvent.getEventDuration());
 
