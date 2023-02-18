@@ -4,9 +4,8 @@ import java.io.UnsupportedEncodingException;
 public class EPGReader {
 
 	final private static int PAYLOADPOINTER_SIZE = 1;
-	final private static int DESCRIPTOR_TAG_AND_LENGHT_SIZE = 2;
-	final private static int DATA_SIZE = DvbReader.PAYLOAD_SIZE - PAYLOADPOINTER_SIZE - EPGSection.BYTESIZE - EPGEvent.BYTESIZE;
-	final private static int CRC_SIZE = 4;
+	
+	final private static int DATA_SIZE = DvbReader.PAYLOAD_SIZE - PAYLOADPOINTER_SIZE - EPGSection.BYTESIZE - EPGEvent.BYTESIZE;	
 
 	final static int epgpids[] = {0x12};
 
@@ -78,29 +77,6 @@ public class EPGReader {
 		return true;
 	}
 
-	static class DescriptorTL {
-
-		public static byte[] buffer = new byte[DESCRIPTOR_TAG_AND_LENGHT_SIZE];
-
-		public static int getTag() {
-			return buffer[0];
-		}
-
-		public static int getLenght() {
-			return buffer[1] & 0xFF;
-		}
-	}
-
-	static class CRC {
-
-		private static byte[] buffer = new byte[CRC_SIZE];
-
-		private static boolean read() {
-			return readFromPackets(buffer, 0);
-		}
-
-	}
-
 	static int SECTIONZERO = 15;
 	private static boolean SAFEMODE = true; 
 
@@ -138,8 +114,8 @@ public class EPGReader {
 					assert(SAFEMODE || descLenght>0);
 					Descriptor.buffer = new byte[descLenght];
 
-					eventLenght -= (DESCRIPTOR_TAG_AND_LENGHT_SIZE + Descriptor.buffer.length);
-					section_length -= (DESCRIPTOR_TAG_AND_LENGHT_SIZE + Descriptor.buffer.length);
+					eventLenght -= (DescriptorTL.BYTESIZE + Descriptor.buffer.length);
+					section_length -= (DescriptorTL.BYTESIZE + Descriptor.buffer.length);
 
 					assert(Descriptor.read());
 
