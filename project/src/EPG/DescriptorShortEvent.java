@@ -47,10 +47,8 @@ public class DescriptorShortEvent extends Descriptor {
 
 		if(buffer.length > tStart) {		
 
-			int tCharTable = 0;
-
 			if((buffer[tStart] & 0xFF) < 0x20) {
-				tCharTable=buffer[tStart];
+				//int tCharTable=buffer[tStart];
 				tStart+=1;
 			}
 
