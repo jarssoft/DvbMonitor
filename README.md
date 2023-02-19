@@ -2,9 +2,9 @@
 
 Extracts teletext and other stuff from MPEG Trasport Stream binary data.
 
-- Monitor: A simple teletext monitoring.
-- SubtitleMonitor: Views teletext subtitles like a chat.
-- EPGReader: Decodes Event Information Table
+- Teletext/Monitor: A simple teletext monitoring.
+- Teletext/SubtitleMonitor: Views teletext subtitles like a chat.
+- EPG/*: Decodes Event Information Table
 - TODO: View thumbnails from video
 - TODO: Audio only television
 
@@ -23,19 +23,19 @@ dvbv5-zap -c channels-v5.conf 610000000 -P
 Then use /dev/dvb/adapter0/dvr0 as standard input,
 
 <pre>
-cat /dev/dvb/adapter0/dvr0 |java -ea Monitor
+cat /dev/dvb/adapter0/dvr0 |java -ea EPG/Monitor
 </pre>
 
 ...or use [dvbsnoop](https://dvbsnoop.sourceforge.net/) to get only one PID,
 
 <pre>
-dvbsnoop -s ts -b 5000 |java -ea Monitor
+dvbsnoop -s ts -b 0x12 |java -ea EPG/Monitor
 </pre>
 
 ...or give it an example transport stream from file:
 
 <pre>
-cat ../test.ts |java -ea Monitor
+cat ../test.ts |java -ea EPG/Monitor
 </pre>
 
 ## SubtitleMonitor
