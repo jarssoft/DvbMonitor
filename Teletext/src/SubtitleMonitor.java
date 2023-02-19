@@ -67,6 +67,7 @@ public class SubtitleMonitor {
 	
 	public static void main(String[] args) {
 		
+		TeletextReader.teletextpids = new int[]{5000, 5010};
 		
 		final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("HH:mm");
 		

@@ -41,7 +41,7 @@ public class TeletextReader {
   final private static int ADDRESS_SIZE = 8;
   final private static int DATA_SIZE = 40;
   
-  private static int teletextpids[] = {5000, 5010};
+  public static int teletextpids[] = {};
   
   private static int packet = 0;
   
@@ -50,10 +50,7 @@ public class TeletextReader {
 	  if(packet==0) {
 		  if(DvbReader.seekPid(teletextpids) == 0) {
 			  return false;
-		  }
-		  
-
-				  
+		  }	  
 	  }
 	  
 	  if(!readPrefix()) {

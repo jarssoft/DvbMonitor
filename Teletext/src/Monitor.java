@@ -2,6 +2,10 @@
 public class Monitor {
 	  
 	  public static void main(String[] args) {
+		  
+		  //TeletextReader.teletextpids = new int[]{5000};
+		  //TeletextReader.teletextpids = new int[]{5010};
+		  TeletextReader.teletextpids = new int[]{4372};
 
 		  int last_y=-1;
 		  
@@ -37,7 +41,7 @@ public class Monitor {
 		       
 		       
 		       
-		       if(DvbReader.getCurrentPID()==5000) {
+		       //if(DvbReader.getCurrentPID()==4372) {
 		    	   
 			       if(TeletextReader.isVisible()) {
 			    	   
@@ -46,7 +50,7 @@ public class Monitor {
 
 			       }
 
-		       }
+		       //}
 		       
 	       }
 	     
