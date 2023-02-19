@@ -1,11 +1,12 @@
-class CRC {
+package EPG;
+class FieldCRC {
 
 	final static int CRC_SIZE = 4;
 	
 	private static byte[] buffer = new byte[CRC_SIZE];
 
 	static boolean read() {
-		return EPGReader.readFromPackets(buffer, 0);
+		return Reader.readFromPackets(buffer, 0);
 	}
 
 }

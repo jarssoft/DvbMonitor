@@ -1,5 +1,6 @@
+package EPG;
 
-class DescriptorTL {
+class FieldDescriptorTL {
 
 	final static int BYTESIZE = 2;
 	

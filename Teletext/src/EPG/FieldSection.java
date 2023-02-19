@@ -1,5 +1,7 @@
+package EPG;
+import PacketReader.DvbReader;
 
-class EPGSection {
+class FieldSection {
 
 	final static int BYTESIZE = 14;  
 	
@@ -17,7 +19,7 @@ class EPGSection {
 		int ti = getTableID();	
 
 		return ((ti==0x4e || ti==0x4f || (ti & 0xF0)==0x50 || (ti & 0xF0)==0x60)
-				&& getLenght()>=EPGReader.SECTIONZERO);
+				&& getLenght()>=Reader.SECTIONZERO);
 	}
 
 	public static int getServiceId() {  
@@ -31,7 +33,7 @@ class EPGSection {
 			//Find place of section
 
 			do {
-				DvbReader.seekPid(EPGReader.epgpids);
+				DvbReader.seekPid(Reader.epgpids);
 			} while(!DvbReader.containsNewUnit());
 
 			DvbReader.toPayloadStart();
@@ -40,9 +42,9 @@ class EPGSection {
 
 		//Read section
 
-		assert(EPGReader.readFromPackets(buffer, 0));
+		assert(Reader.readFromPackets(buffer, 0));
 
-		EPGReader.monitor.section();
+		Reader.monitor.section();
 
 		assert(isValid());
 

@@ -1,3 +1,4 @@
+package Teletext;
 /**
 	Change of teletext line.
 */

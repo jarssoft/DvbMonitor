@@ -1,13 +1,13 @@
-package Descriptions;
+package EPG;
 import java.io.UnsupportedEncodingException;
 
-public class ShortEventDescriptor extends Descriptor {
+public class DescriptorShortEvent extends Descriptor {
 	
 	static final public int TAG = 0x4d;
 	
 	/** Returns ISO_639_language_code of short event descriptor as string. */
 	public static String getLang() {
-		return ParentalRatingDescriptor.getLang(0);
+		return DescriptorParentalRating.getLang(0);
 	}
 	
 	/** Returns ISO_639_language_code of short event descriptor as integer. */

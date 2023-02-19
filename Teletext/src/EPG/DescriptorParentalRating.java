@@ -1,6 +1,6 @@
-package Descriptions;
+package EPG;
 
-public class ParentalRatingDescriptor extends Descriptor {
+public class DescriptorParentalRating extends Descriptor {
 	
 	static final public int TAG = 0x55;
 	

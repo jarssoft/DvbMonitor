@@ -1,4 +1,4 @@
-package Descriptions;
+package EPG;
 
 public class Descriptor {
 

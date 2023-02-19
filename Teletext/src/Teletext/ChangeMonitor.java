@@ -1,4 +1,7 @@
+package Teletext;
 import java.util.LinkedHashMap;
+
+import PacketReader.DvbReader;
 
 public class ChangeMonitor {
 
@@ -10,26 +13,26 @@ public class ChangeMonitor {
 	
 	public static LineChange readChange() {
 
-		while (TeletextReader.readPacket()) {
-			if(TeletextReader.isVisible()) { 
+		while (Reader.readPacket()) {
+			if(Reader.isVisible()) { 
 
 				int kanava = (DvbReader.getCurrentPID()==5000 ? 0 : 1);
 				//assert(DvbReader.getCurrentPID()==5000);
 
-				int y = TeletextReader.getY();
+				int y = Reader.getY();
 
 				// Read page number from header packet?
 				if(y==0) {
 
-					if(!TeletextReader.readAddress()) {
+					if(!Reader.readAddress()) {
 						break;
 					}
 
-					current_page[kanava] = kanava * 1000 + TeletextReader.getMagazine() * 100 + TeletextReader.getPageNumber();
+					current_page[kanava] = kanava * 1000 + Reader.getMagazine() * 100 + Reader.getPageNumber();
 
 				}
 
-				if(!TeletextReader.readData()) {
+				if(!Reader.readData()) {
 					break;
 				}
 
@@ -39,7 +42,7 @@ public class ChangeMonitor {
 
 					if((followedPackets[current_page[kanava]] & (1 << (32-y))) != 0) {	
 						
-						String data = TeletextReader.getDataAsText();
+						String data = Reader.getDataAsText();
 						
 						if(!data.equals(prevdata.get(current_page[kanava] * 25 + y))) {
 							prevdata.put(current_page[kanava]*25+y, data);
@@ -50,7 +53,7 @@ public class ChangeMonitor {
 					}
 				}
 			}else {
-				if(!TeletextReader.readData()) {
+				if(!Reader.readData()) {
 					break;
 				}
 			}

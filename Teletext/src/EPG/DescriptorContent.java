@@ -1,6 +1,6 @@
-package Descriptions;
+package EPG;
 
-public class ContentDescriptor extends Descriptor {
+public class DescriptorContent extends Descriptor {
 
 	static final public int TAG = 0x54;
 	

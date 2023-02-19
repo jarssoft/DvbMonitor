@@ -1,15 +1,17 @@
+package EPG;
 import java.io.IOException;
-import Descriptions.Descriptor;
 
-public class EPGReader {
+import PacketReader.DvbReader;
+
+public class Reader {
 
 	final private static int PAYLOADPOINTER_SIZE = 1;
 	
-	final private static int DATA_SIZE = DvbReader.PAYLOAD_SIZE - PAYLOADPOINTER_SIZE - EPGSection.BYTESIZE - EPGEvent.BYTESIZE;	
+	final private static int DATA_SIZE = DvbReader.PAYLOAD_SIZE - PAYLOADPOINTER_SIZE - FieldSection.BYTESIZE - FieldEvent.BYTESIZE;	
 
 	final static int epgpids[] = {0x12};
 
-	static EPGMonitor monitor;
+	static Monitor monitor;
 
 	/** 
 	 * Read byte-buffer, which continues on next packet. 
@@ -34,7 +36,7 @@ public class EPGReader {
 
 			// If 0xFF read then there is stuffing and no buffer read in this packet
 			// (ETSI EN 300 468, 5.1.2)
-			if((buffer[start] & 0xFF) == 0xFF && buffer.length == EPGSection.BYTESIZE) {
+			if((buffer[start] & 0xFF) == 0xFF && buffer.length == FieldSection.BYTESIZE) {
 
 				//All bytes are 0xFF
 				assert((buffer[start+readNow-1] & 0xFF) == 0xFF);
@@ -71,7 +73,7 @@ public class EPGReader {
 	public static boolean readBuffer(byte[] buffer) {
 		assert(buffer!=null);
 
-		return EPGReader.readFromPackets(buffer,0);
+		return Reader.readFromPackets(buffer,0);
 	}
 
 	public static boolean nextPacket() {
@@ -86,23 +88,23 @@ public class EPGReader {
 	static int SECTIONZERO = 15;
 	private static boolean SAFEMODE = true; 
 
-	public static void readEPG(EPGMonitor monitor) {
+	public static void readEPG(Monitor monitor) {
 
-		EPGReader.monitor = monitor;
+		Reader.monitor = monitor;
 
-		assert(DvbReader.HEADER_SIZE + PAYLOADPOINTER_SIZE + EPGSection.BYTESIZE 
-				+ EPGEvent.BYTESIZE + DATA_SIZE == DvbReader.TS_PACKET_SIZE);
+		assert(DvbReader.HEADER_SIZE + PAYLOADPOINTER_SIZE + FieldSection.BYTESIZE 
+				+ FieldEvent.BYTESIZE + DATA_SIZE == DvbReader.TS_PACKET_SIZE);
 
 		// TS loop
 		while (true) {
 
-			int section_length = EPGSection.next();
+			int section_length = FieldSection.next();
 
 			// Iterate events
 			while(section_length > SECTIONZERO) {
 
-				int eventLenght = EPGEvent.next();
-				section_length -= EPGEvent.BYTESIZE;
+				int eventLenght = FieldEvent.next();
+				section_length -= FieldEvent.BYTESIZE;
 
 				if(eventLenght == 0) {
 					section_length = SECTIONZERO;
@@ -113,26 +115,26 @@ public class EPGReader {
 				// Iterate descriotors
 				while (eventLenght>0){
 
-					assert(readFromPackets(DescriptorTL.buffer, 0 ));					  
+					assert(readFromPackets(FieldDescriptorTL.buffer, 0 ));					  
 
-					int descLenght = DescriptorTL.getLenght();
+					int descLenght = FieldDescriptorTL.getLenght();
 
 					assert(SAFEMODE || descLenght>0);
 					Descriptor.buffer = new byte[descLenght];
 
-					eventLenght -= (DescriptorTL.BYTESIZE + Descriptor.buffer.length);
-					section_length -= (DescriptorTL.BYTESIZE + Descriptor.buffer.length);
+					eventLenght -= (FieldDescriptorTL.BYTESIZE + Descriptor.buffer.length);
+					section_length -= (FieldDescriptorTL.BYTESIZE + Descriptor.buffer.length);
 
 					assert(readBuffer(Descriptor.buffer));
 
 					// Print data of descriptor.
 
-					monitor.descriptor(DescriptorTL.getTag());
+					monitor.descriptor(FieldDescriptorTL.getTag());
 
 				}
 			} 
 
-			assert(CRC.read());
+			assert(FieldCRC.read());
 
 		}
 	}

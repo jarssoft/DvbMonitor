@@ -1,5 +1,7 @@
+package Teletext;
+import PacketReader.DvbReader;
 
-public class TeletextReader {
+public class Reader {
 	
   private static boolean isAsciiPrintable(char ch) {
 	  

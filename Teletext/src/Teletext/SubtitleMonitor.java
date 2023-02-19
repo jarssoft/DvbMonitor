@@ -1,3 +1,4 @@
+package Teletext;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -67,7 +68,7 @@ public class SubtitleMonitor {
 	
 	public static void main(String[] args) {
 		
-		TeletextReader.teletextpids = new int[]{5000, 5010};
+		Reader.teletextpids = new int[]{5000, 5010};
 		
 		final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("HH:mm");
 		

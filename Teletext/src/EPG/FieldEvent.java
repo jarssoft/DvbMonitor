@@ -1,7 +1,8 @@
+package EPG;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
-class EPGEvent {
+class FieldEvent {
 
 	final static int BYTESIZE = 12;
 	
@@ -21,13 +22,13 @@ class EPGEvent {
 		//assert(DvbReader.getDataleft()>=2);
 		//assert(readCRC());
 
-		assert(EPGReader.readFromPackets(buffer, 0));
+		assert(Reader.readFromPackets(buffer, 0));
 
 		//assert(SAFEMODE || (bufferEventHeader[2] & 0xFF) == 0xEA): "Error in EventHeader.";
 
 		assert(isValid());
 
-		EPGReader.monitor.event();
+		Reader.monitor.event();
 
 		//System.out.println("  Event: (s" + section_length + ") " + getEventHeaderAsHex());
 

@@ -1,3 +1,4 @@
+package Teletext;
 
 public class Monitor {
 	  
@@ -5,27 +6,27 @@ public class Monitor {
 		  
 		  //TeletextReader.teletextpids = new int[]{5000};
 		  //TeletextReader.teletextpids = new int[]{5010};
-		  TeletextReader.teletextpids = new int[]{4372};
+		  Reader.teletextpids = new int[]{4372};
 
 		  int last_y=-1;
 		  
-	      while (TeletextReader.readPacket()) {
+	      while (Reader.readPacket()) {
 						   
 			   StringBuilder result = new StringBuilder();
 			   
-		       result.append(TeletextReader.getPrefixAsHex() + " ");
+		       result.append(Reader.getPrefixAsHex() + " ");
 		       		
-		       int y = TeletextReader.getY();
+		       int y = Reader.getY();
 		       
 		       if(y==0) {
  
-				   if(!TeletextReader.readAddress()) {
+				   if(!Reader.readAddress()) {
 					   break;
 				   }
 				   
-				   result.append(" "+TeletextReader.getAddressAsHex() + "   ");
+				   result.append(" "+Reader.getAddressAsHex() + "   ");
 			       
-			       int page_number = TeletextReader.getPageNumber() + TeletextReader.getMagazine() * 100;
+			       int page_number = Reader.getPageNumber() + Reader.getMagazine() * 100;
 			       
 			       result.append("           P" + page_number);
 			       
@@ -33,17 +34,17 @@ public class Monitor {
 	  
 				   } 
 					   	
-			   if(!TeletextReader.readData()) {
+			   if(!Reader.readData()) {
 				   break;
 			   }
 		       
-		       result.append(TeletextReader.getDataAsText() + " " + String.format("%02d", y) + ((last_y+1)==y ? " " : "*")); 
+		       result.append(Reader.getDataAsText() + " " + String.format("%02d", y) + ((last_y+1)==y ? " " : "*")); 
 		       
 		       
 		       
 		       //if(DvbReader.getCurrentPID()==4372) {
 		    	   
-			       if(TeletextReader.isVisible()) {
+			       if(Reader.isVisible()) {
 			    	   
 			    	   System.out.println(result.toString());
 			    	   last_y=y;

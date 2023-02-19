@@ -1,3 +1,4 @@
+package PacketReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -274,8 +275,8 @@ public class DvbReader {
 		boolean ok = read(left);
 		
 		String s = new String(left, StandardCharsets.UTF_8);
-		System.out.println((left[0]!=0xFF ? SubtitleMonitor.ANSI_LRED : "") 
-				+ s + SubtitleMonitor.ANSI_RESET);
+		System.out.println((left[0]!=0xFF ? "" : "") 
+				+ s + "");
 		
 		return ok;
 		
@@ -294,8 +295,7 @@ public class DvbReader {
 				assert(read(hopp));		  
 	
 				String s = new String(hopp, StandardCharsets.UTF_8);
-				System.out.println(SubtitleMonitor.ANSI_LBLUE 
-						+ s + SubtitleMonitor.ANSI_RESET);
+				System.out.println(s);
 			}
 		}
 	}
