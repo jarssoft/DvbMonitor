@@ -1,6 +1,9 @@
 package EPG;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Calendar;
+import java.util.TimeZone;
 
 class FieldEvent {
 
@@ -43,7 +46,10 @@ class FieldEvent {
 		return ((b & 0xF0) >> 4) * 10 + (b & 0x0F);
 	}
 
-	public static String getEventStart() {
+    private final static TimeZone UTC = TimeZone.getTimeZone("UTC");      
+    private final static ZoneId HELSINKI_TIMEZONE = TimeZone.getTimeZone("Europe/Helsinki").toZoneId();
+    
+	public static LocalDateTime getEventStart() {
 
 		int MJD = (((buffer[2] & 0xFF) << 8) |(buffer[3] & 0xFF));
 
@@ -67,11 +73,15 @@ class FieldEvent {
 			return null;
 		}
 
-		return LocalDateTime.of(Y + 1900, M, D,
+        Calendar cal = Calendar.getInstance(UTC);
+        cal.set(Y + 1900, M, D,
 				timeunit(buffer[4]), 
 				timeunit(buffer[5]),  
 				timeunit(buffer[6])
-				).toString();
+				);
+        
+        return LocalDateTime.ofInstant(cal.toInstant(),  HELSINKI_TIMEZONE);
+
 	}
 
 	public static String formatDuration(Duration duration) {
