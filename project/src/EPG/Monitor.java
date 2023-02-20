@@ -1,7 +1,7 @@
 package EPG;
 import PacketReader.DvbReader;
 
-public class Monitor {
+public class Monitor implements Client {
 
 	public void section() {
 
@@ -22,7 +22,7 @@ public class Monitor {
 
 	final private String DESCIDENT = "      ";
 
-	void descriptor(int tag) {
+	public void descriptor(int tag) {
 
 		System.out.println("    Desc: (e"+FieldEvent.getDescriptorLoopLenght() + ") " + DvbReader.byteBuffertoHex(FieldDescriptorTL.buffer) + "  ");
 

@@ -11,7 +11,7 @@ public class Reader {
 
 	final static int epgpids[] = {0x12};
 
-	static Monitor monitor;
+	static Client monitor;
 
 	/** 
 	 * Read byte-buffer, which continues on next packet. 
@@ -88,7 +88,7 @@ public class Reader {
 	static int SECTIONZERO = 15;
 	private static boolean SAFEMODE = true; 
 
-	public static void readEPG(Monitor monitor) {
+	public static void readEPG(Client monitor) {
 
 		Reader.monitor = monitor;
 

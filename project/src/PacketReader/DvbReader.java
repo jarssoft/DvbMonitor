@@ -275,8 +275,8 @@ public class DvbReader {
 		boolean ok = read(left);
 		
 		String s = new String(left, StandardCharsets.UTF_8);
-		System.out.println((left[0]!=0xFF ? "" : "") 
-				+ s + "");
+		//System.out.println((left[0]!=0xFF ? "" : "") 
+		//		+ s + "");
 		
 		return ok;
 		
