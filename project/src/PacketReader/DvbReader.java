@@ -1,32 +1,23 @@
 package PacketReader;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 /** Reads Transport Stream. */
 public class DvbReader {
-	
-	// Packet data counter
-	private static int dataleft = 0;
-	  
-	/** Returns amount of data left in packet in bytes. */
-	public static int getDataleft() {
-		return dataleft;
-	}
-	
-	public static void reduceDataleft(int dl) {
-		dataleft -= dl;
-	}
-	
+		
 	final public static int TS_PACKET_SIZE = 188;	
 	
 	// Payload pointer
 	
-	final public static int PAYLOADPOINTER_SIZE = 1;
+	final private static int PAYLOADPOINTER_SIZE = 1;
 	
 	private static byte[] bufferPayloadPointer = new byte[PAYLOADPOINTER_SIZE];
 	
 	public static int getPayloadPointer() {
 		return bufferPayloadPointer[0] & 0xFF;
+	}
+	
+	public static void readPayloadPointer() {
+		assert(Field.read(bufferPayloadPointer));
 	}
 	
 	public static void toPayloadStart() {
@@ -53,77 +44,24 @@ public class DvbReader {
 		return Field.read(bufferPayload);
 	}
 
-	//Seeking packets
-	
-	static int[] pidfilter = new int[] {};
-	
-	public static void setFilter(int[] pids) {
-		pidfilter = pids;
-	}
-	
-	private static boolean contains(final int key) {
-	    return Arrays.stream(pidfilter).anyMatch(i -> i == key);
-	}
-	
-	/** Reads transport stream to begin of the first packet,
-	 *  thats PID founds on array @pidfilter.
-	 *  Returns PID. */  
-	public static int seekPid() {
 
-		//assert(dataleft==0): "dataleft must be zero, but dataleft = " + dataleft;
-		
-		while(true) {
-			
-			dataleft = DvbReader.TS_PACKET_SIZE;
-			
-			if(!Id.read()) {
-				return 0;
-			}	
-			
-			if(Id.hasSyncByte()){	
-				
-				int currentPID = Id.getPid();
-								
-				if(contains(currentPID)) {
-					
-					/*
-					System.out.print("[Packet in "
-							+ "0x" + Integer.toHexString(DvbReader.getReadOffset()-HEADER_SIZE)
-							+ " - "+DvbReader.getIdAsHex()
-							+ ", pid 0x" + Integer.toHexString(currentPID)							
-							);
-							*/
-					
-					//System.out.println(getIdAsHex() + " (pid=" + pid + ")");
-					
-					//Jump to Payload Pointer
-					if(Id.containsNewUnit()) {
-						assert(Field.read(bufferPayloadPointer));
-						//System.out.print(", Paystart " + getPayloadPointer());
-					}
-					
-					//System.out.println("] ");
-					
-					return currentPID;
-				}
-				
-				
-				//Read to end of packet
-				//assert(readLeft());
-				
-				assert(Field.read(bufferPayload));
-
-			}
-			
-			//assert(dataleft==PAYLOAD_SIZE): "dataleft must be zero, but dataleft = " + dataleft;
-
-		}
-
-	}
 
 	//Data left
 	
-	private static byte[] left;
+	private static int dataleft = 0;
+	  
+	/** Returns amount of data left in packet in bytes. */
+	public static int getDataleft() {
+		return dataleft;
+	}
+	
+	public static void reduceDataleft(int dl) {
+		dataleft -= dl;
+	}
+	
+	public static void resetLeft() {
+		dataleft = TS_PACKET_SIZE;
+	}
 
 	public static boolean readLeft() {
 		
@@ -134,7 +72,7 @@ public class DvbReader {
 		assert(dataleft >= 0): "dataleft must be zero or positive, but dataleft = " + dataleft;
 		assert(dataleft < TS_PACKET_SIZE);
 		
-		left = new byte[dataleft];
+		byte[] left = new byte[dataleft];
 		boolean ok = Field.read(left);
 		
 		String s = new String(left, StandardCharsets.UTF_8);

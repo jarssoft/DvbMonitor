@@ -1,4 +1,5 @@
 package Teletext;
+import PacketReader.SeekPID;
 import PacketReader.DvbReader;
 import PacketReader.Field;
 
@@ -50,7 +51,7 @@ public class Reader {
   public static boolean readPacket() {
 	  
 	  if(packet==0) {
-		  currentPid = DvbReader.seekPid();
+		  currentPid = SeekPID.seekPid();
 		  if(currentPid == 0) {
 			  return false;
 		  }	  

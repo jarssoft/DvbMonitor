@@ -44,10 +44,9 @@ public class Monitor {
 	public static void main(String[] args) {
 		
 		int packets=0;
-		DvbReader.setFilter(new int[] {0x12});
+		SeekPID.setFilter(new int[] {0x12});
 		
-		while(DvbReader.seekPid() == 0x12) {
-						
+		while(SeekPID.seekPid() == 0x12) {
 			
 			System.out.print((packets++)+" ");						
 			

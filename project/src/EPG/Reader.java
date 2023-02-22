@@ -3,6 +3,7 @@ import java.io.IOException;
 
 import PacketReader.DvbReader;
 import PacketReader.Id;
+import PacketReader.SeekPID;
 
 public class Reader {
 
@@ -79,7 +80,7 @@ public class Reader {
 
 	public static boolean nextPacket() {
 
-		if(DvbReader.seekPid() == 0) {		  
+		if(SeekPID.seekPid() == 0) {		  
 			return false;
 		}
 
@@ -91,7 +92,7 @@ public class Reader {
 
 	public static void readEPG(Client monitor) {
 
-		PacketReader.DvbReader.setFilter(new int [] {0x12});
+		PacketReader.SeekPID.setFilter(new int [] {0x12});
 		Reader.monitor = monitor;
 
 		assert(Id.BYTESIZE + PAYLOADPOINTER_SIZE + FieldSection.BYTESIZE 

@@ -1,8 +1,6 @@
 package Teletext;
 import java.util.LinkedHashMap;
 
-import PacketReader.DvbReader;
-
 public class ChangeMonitor {
 
 	public static int followedPackets[] = new int[1900];

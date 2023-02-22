@@ -1,9 +1,7 @@
 package Teletext;
 import java.time.LocalDateTime;
-//import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-
-import PacketReader.DvbReader;
+import PacketReader.SeekPID;
 
 public class SubtitleMonitor {
 
@@ -71,7 +69,7 @@ public class SubtitleMonitor {
 	public static void main(String[] args) {
 		
 		
-		DvbReader.setFilter(new int[]{5000, 5010});
+		SeekPID.setFilter(new int[]{5000, 5010});
 		
 		//final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("HH:mm");
 		

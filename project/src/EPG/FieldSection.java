@@ -1,6 +1,7 @@
 package EPG;
 import PacketReader.DvbReader;
 import PacketReader.Id;
+import PacketReader.SeekPID;
 
 class FieldSection {
 
@@ -34,7 +35,7 @@ class FieldSection {
 			//Find place of section
 
 			do {
-				DvbReader.seekPid();
+				SeekPID.seekPid();
 			} while(!Id.containsNewUnit());
 
 			DvbReader.toPayloadStart();

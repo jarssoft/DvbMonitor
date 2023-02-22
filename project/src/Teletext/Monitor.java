@@ -1,6 +1,6 @@
 package Teletext;
 
-import PacketReader.DvbReader;
+import PacketReader.SeekPID;
 
 public class Monitor {
 	  
@@ -9,7 +9,7 @@ public class Monitor {
 		  //TeletextReader.teletextpids = new int[]{5000};
 		  //TeletextReader.teletextpids = new int[]{5010};
 
-		  DvbReader.setFilter(new int[] {4372});
+		  SeekPID.setFilter(new int[] {4372});
 
 		  int last_y=-1;
 		  
