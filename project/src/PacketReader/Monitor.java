@@ -46,7 +46,7 @@ public class Monitor {
 		int packets=0;
 		SeekPID.setFilter(new int[] {0x12});
 		
-		while(SeekPID.seekPid() == 0x12) {
+		while(SeekPID.nextPacket() == 0x12) {
 			
 			System.out.print((packets++)+" ");						
 			

@@ -80,7 +80,7 @@ public class Reader {
 
 	public static boolean nextPacket() {
 
-		if(SeekPID.seekPid() == 0) {		  
+		if(SeekPID.nextPacket() == 0) {		  
 			return false;
 		}
 

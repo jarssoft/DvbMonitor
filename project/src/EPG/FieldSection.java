@@ -31,15 +31,7 @@ class FieldSection {
 	public static int next() {
 
 		if(DvbReader.getDataleft()==0) {
-
-			//Find place of section
-
-			do {
-				SeekPID.seekPid();
-			} while(!Id.containsNewUnit());
-
-			DvbReader.toPayloadStart();
-
+			SeekPID.nextPayloadStart();
 		}
 
 		//Read section

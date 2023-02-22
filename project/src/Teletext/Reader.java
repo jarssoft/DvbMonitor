@@ -51,7 +51,7 @@ public class Reader {
   public static boolean readPacket() {
 	  
 	  if(packet==0) {
-		  currentPid = SeekPID.seekPid();
+		  currentPid = SeekPID.nextPacket();
 		  if(currentPid == 0) {
 			  return false;
 		  }	  
