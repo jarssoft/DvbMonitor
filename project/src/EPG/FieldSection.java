@@ -34,7 +34,7 @@ class FieldSection {
 			//Find place of section
 
 			do {
-				DvbReader.seekPid(Reader.epgpids);
+				DvbReader.seekPid();
 			} while(!Id.containsNewUnit());
 
 			DvbReader.toPayloadStart();

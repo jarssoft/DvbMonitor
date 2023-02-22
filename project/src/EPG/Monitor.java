@@ -83,6 +83,7 @@ public class Monitor implements Client {
 
 	public static void main(String[] args) {
 
+		
 		Monitor monitor = new Monitor();		
 		Reader.readEPG(monitor);
 

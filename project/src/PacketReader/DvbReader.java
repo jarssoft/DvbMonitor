@@ -4,13 +4,11 @@ import java.util.Arrays;
 
 /** Reads Transport Stream. */
 public class DvbReader {
-
-	final public static int TS_PACKET_SIZE = 188;
-	final public static int PAYLOAD_SIZE = TS_PACKET_SIZE - Id.BYTESIZE;
-	final public static int PAYLOADPOINTER_SIZE = 1;
 	
+	// Packet data counter
 	private static int dataleft = 0;
 	  
+	/** Returns amount of data left in packet in bytes. */
 	public static int getDataleft() {
 		return dataleft;
 	}
@@ -18,23 +16,59 @@ public class DvbReader {
 	public static void reduceDataleft(int dl) {
 		dataleft -= dl;
 	}
-
-	/** Buffers for using read transport stream. */
 	
-	private static byte[] bufferPayload = new byte[PAYLOAD_SIZE];
+	final public static int TS_PACKET_SIZE = 188;	
+	
+	// Payload pointer
+	
+	final public static int PAYLOADPOINTER_SIZE = 1;
+	
 	private static byte[] bufferPayloadPointer = new byte[PAYLOADPOINTER_SIZE];
-	
-	private static boolean contains(final int[] arr, final int key) {
-	    return Arrays.stream(arr).anyMatch(i -> i == key);
-	}
 	
 	public static int getPayloadPointer() {
 		return bufferPayloadPointer[0] & 0xFF;
 	}
+	
+	public static void toPayloadStart() {
+		//System.out.println("(jump " + getPayloadPointer() + ", " + continues + ")");
 
+		if(Id.containsNewUnit()) {
+			if(getPayloadPointer()>0) {
+				byte hopp[] = new byte[getPayloadPointer()];
+				assert(Field.read(hopp));		  
+	
+				String s = new String(hopp, StandardCharsets.UTF_8);
+				System.out.println(s);
+			}
+		}
+	}
+	
+	//Payload 
+	
+	final public static int PAYLOAD_SIZE = TS_PACKET_SIZE - Id.BYTESIZE;
+	private static byte[] bufferPayload = new byte[PAYLOAD_SIZE];	
+	
+	/** Read next id. */
+	public static boolean readPayload() {
+		return Field.read(bufferPayload);
+	}
+
+	//Seeking packets
+	
+	static int[] pidfilter = new int[] {};
+	
+	public static void setFilter(int[] pids) {
+		pidfilter = pids;
+	}
+	
+	private static boolean contains(final int key) {
+	    return Arrays.stream(pidfilter).anyMatch(i -> i == key);
+	}
+	
 	/** Reads transport stream to begin of the first packet,
-	 *  thats PID founds on array @pidfilter.*/  
-	public static int seekPid(final int[] pidfilter) {
+	 *  thats PID founds on array @pidfilter.
+	 *  Returns PID. */  
+	public static int seekPid() {
 
 		//assert(dataleft==0): "dataleft must be zero, but dataleft = " + dataleft;
 		
@@ -42,7 +76,7 @@ public class DvbReader {
 			
 			dataleft = DvbReader.TS_PACKET_SIZE;
 			
-			if(!Id.readId()) {
+			if(!Id.read()) {
 				return 0;
 			}	
 			
@@ -50,7 +84,7 @@ public class DvbReader {
 				
 				int currentPID = Id.getPid();
 								
-				if(contains(pidfilter, currentPID)) {
+				if(contains(currentPID)) {
 					
 					/*
 					System.out.print("[Packet in "
@@ -87,7 +121,9 @@ public class DvbReader {
 
 	}
 
-	private static byte[] left = new byte[Id.BYTESIZE];
+	//Data left
+	
+	private static byte[] left;
 
 	public static boolean readLeft() {
 		
@@ -107,29 +143,6 @@ public class DvbReader {
 		
 		return ok;
 		
-	}
-	
-	public static byte[] getLeft() {
-		return left;
-	}
-
-	public static void toPayloadStart() {
-		//System.out.println("(jump " + getPayloadPointer() + ", " + continues + ")");
-
-		if(Id.containsNewUnit()) {
-			if(getPayloadPointer()>0) {
-				byte hopp[] = new byte[getPayloadPointer()];
-				assert(Field.read(hopp));		  
-	
-				String s = new String(hopp, StandardCharsets.UTF_8);
-				System.out.println(s);
-			}
-		}
-	}
-	
-	/** Read next id. */
-	public static boolean readPayload() {
-		return Field.read(bufferPayload);
 	}
 
 }

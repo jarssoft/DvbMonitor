@@ -44,15 +44,13 @@ public class Reader {
   final private static int ADDRESS_SIZE = 8;
   final private static int DATA_SIZE = 40;
   
-  public static int teletextpids[] = {};
-  
   private static int packet = 0;
   private static int currentPid = 0;
   
   public static boolean readPacket() {
 	  
 	  if(packet==0) {
-		  currentPid = DvbReader.seekPid(teletextpids);
+		  currentPid = DvbReader.seekPid();
 		  if(currentPid == 0) {
 			  return false;
 		  }	  
@@ -143,8 +141,8 @@ public class Reader {
       return result.toString();
   }
 
-public static int getCurrentPID() {
-	return currentPid;
-}
-  
+  public static int getCurrentPID() {
+	  return currentPid;
+  }
+
 }

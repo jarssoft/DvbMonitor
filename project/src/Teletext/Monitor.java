@@ -1,12 +1,15 @@
 package Teletext;
 
+import PacketReader.DvbReader;
+
 public class Monitor {
 	  
 	  public static void main(String[] args) {
 		  
 		  //TeletextReader.teletextpids = new int[]{5000};
 		  //TeletextReader.teletextpids = new int[]{5010};
-		  Reader.teletextpids = new int[]{4372};
+
+		  DvbReader.setFilter(new int[] {4372});
 
 		  int last_y=-1;
 		  

@@ -10,7 +10,7 @@ public class Reader {
 	
 	final private static int DATA_SIZE = DvbReader.PAYLOAD_SIZE - PAYLOADPOINTER_SIZE - FieldSection.BYTESIZE - FieldEvent.BYTESIZE;	
 
-	final static int epgpids[] = {0x12};
+	
 
 	static Client monitor;
 
@@ -79,7 +79,7 @@ public class Reader {
 
 	public static boolean nextPacket() {
 
-		if(DvbReader.seekPid(epgpids) == 0) {		  
+		if(DvbReader.seekPid() == 0) {		  
 			return false;
 		}
 
@@ -91,6 +91,7 @@ public class Reader {
 
 	public static void readEPG(Client monitor) {
 
+		PacketReader.DvbReader.setFilter(new int [] {0x12});
 		Reader.monitor = monitor;
 
 		assert(Id.BYTESIZE + PAYLOADPOINTER_SIZE + FieldSection.BYTESIZE 

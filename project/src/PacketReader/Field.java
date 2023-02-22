@@ -4,6 +4,8 @@ import java.io.IOException;
 
 public class Field {
 	
+	//private static byte[] buffer;
+	
 	/** Read byte-buffer. Return true if succeed, otherwise false. */
 	public static boolean read(byte[] buffer) {
 		

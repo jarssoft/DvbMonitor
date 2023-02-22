@@ -3,6 +3,8 @@ import java.time.LocalDateTime;
 //import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
+import PacketReader.DvbReader;
+
 public class SubtitleMonitor {
 
 	public static class LineCache{
@@ -68,7 +70,8 @@ public class SubtitleMonitor {
 	
 	public static void main(String[] args) {
 		
-		Reader.teletextpids = new int[]{5000, 5010};
+		
+		DvbReader.setFilter(new int[]{5000, 5010});
 		
 		//final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("HH:mm");
 		

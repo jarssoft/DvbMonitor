@@ -2,7 +2,6 @@ package PacketReader;
 
 public class Monitor {
 
-
 	/** Transport Stream Monitor */
 	public static void maind(String[] args) {
 		
@@ -10,7 +9,7 @@ public class Monitor {
 		int[] lastpn=new int[8191+1];
 		
 		int dataleft=Integer.MAX_VALUE;
-		while(Id.readId() && packets<500000) {
+		while(Id.read() && packets<500000) {
 			
 			if(Id.hasSyncByte() && Id.getPid()==0x12) {
 					
@@ -45,9 +44,9 @@ public class Monitor {
 	public static void main(String[] args) {
 		
 		int packets=0;
-		int[] pidfilter= {0x12};
+		DvbReader.setFilter(new int[] {0x12});
 		
-		while(DvbReader.seekPid(pidfilter) == 0x12) {
+		while(DvbReader.seekPid() == 0x12) {
 						
 			
 			System.out.print((packets++)+" ");						
