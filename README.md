@@ -5,10 +5,10 @@ Extracts teletext and other stuff from MPEG Transport Stream in real time.
 - PacketReader.*: Reads common transport stream packets. Can be filtering by PID-value.
 - Teletext.*: A simple teletext decoder.
 - Teletext.SubtitleMonitor: Views teletext subtitles like a chat.
-- EPG/*: Decodes Event Information Table
+- EPG.*: Decodes Event Information Table
 - TODO: View thumbnails from video.
 - TODO: Listen audio only television.
-- TODO: Decode also adaptation fields.
+- TODO: Decode also adaptation fields in TS-packets.
  
 ## Installation
 
