@@ -1,11 +1,12 @@
 package EPG;
 import PacketReader.DvbReader;
+import PacketReader.Field;
 
 public class Monitor implements Client {
 
 	public void section() {
 
-		System.out.println("Section: " + DvbReader.byteBuffertoHex(FieldSection.buffer)
+		System.out.println("Section: " + Field.byteBuffertoHex(FieldSection.buffer)
 				+ ", correct: " +FieldSection.isValid()
 				+ ", lenght: "+FieldSection.getLenght());
 		System.out.println("  Service: " + FieldSection.getServiceId());
@@ -14,7 +15,7 @@ public class Monitor implements Client {
 
 	public void event() {
 
-		System.out.println("  Event: " + DvbReader.byteBuffertoHex(FieldSection.buffer));
+		System.out.println("  Event: " + Field.byteBuffertoHex(FieldSection.buffer));
 		System.out.println("    Starts: " + FieldEvent.getEventStart() 
 				+ ", Duration: " + FieldEvent.getEventDuration());
 
@@ -24,13 +25,13 @@ public class Monitor implements Client {
 
 	public void descriptor(int tag) {
 
-		System.out.println("    Desc: (e"+FieldEvent.getDescriptorLoopLenght() + ") " + DvbReader.byteBuffertoHex(FieldDescriptorTL.buffer) + "  ");
+		System.out.println("    Desc: (e"+FieldEvent.getDescriptorLoopLenght() + ") " + Field.byteBuffertoHex(FieldDescriptorTL.buffer) + "  ");
 
 		switch (tag) {
 		
 		  case DescriptorContent.TAG:
 			  
-			  System.out.print(DESCIDENT + DvbReader.byteBuffertoHex(Descriptor.buffer) + "  ");
+			  System.out.print(DESCIDENT + Field.byteBuffertoHex(Descriptor.buffer) + "  ");
 				System.out.print(DescriptorContent.nibbles[(DescriptorContent.getContentNibble(Descriptor.buffer) & 0xF0) >> 4]);
 				System.out.println();
 				
@@ -38,7 +39,7 @@ public class Monitor implements Client {
 		    
 		  case DescriptorParentalRating.TAG:
 			  
-				System.out.println(DESCIDENT + DvbReader.byteBuffertoHex(Descriptor.buffer));
+				System.out.println(DESCIDENT + Field.byteBuffertoHex(Descriptor.buffer));
 				
 				System.out.println(DESCIDENT + "Countries: " + DescriptorParentalRating.getCountries());
 				

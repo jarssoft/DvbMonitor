@@ -16,7 +16,7 @@ public class ChangeMonitor {
 		while (Reader.readPacket()) {
 			if(Reader.isVisible()) { 
 
-				int kanava = (DvbReader.getCurrentPID()==5000 ? 0 : 1);
+				int kanava = (Reader.getCurrentPID()==5000 ? 0 : 1);
 				//assert(DvbReader.getCurrentPID()==5000);
 
 				int y = Reader.getY();

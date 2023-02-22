@@ -1,5 +1,6 @@
 package EPG;
 import PacketReader.DvbReader;
+import PacketReader.Id;
 
 class FieldSection {
 
@@ -34,7 +35,7 @@ class FieldSection {
 
 			do {
 				DvbReader.seekPid(Reader.epgpids);
-			} while(!DvbReader.containsNewUnit());
+			} while(!Id.containsNewUnit());
 
 			DvbReader.toPayloadStart();
 

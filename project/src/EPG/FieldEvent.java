@@ -49,7 +49,7 @@ class FieldEvent {
     private final static TimeZone UTC = TimeZone.getTimeZone("UTC");      
     private final static ZoneId HELSINKI_TIMEZONE = TimeZone.getTimeZone("Europe/Helsinki").toZoneId();
     
-	public static LocalDateTime getEventStart() {
+	public static LocalDateTime getEventStart() { 
 
 		int MJD = (((buffer[2] & 0xFF) << 8) |(buffer[3] & 0xFF));
 

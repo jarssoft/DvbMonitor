@@ -1,5 +1,6 @@
 package Teletext;
 import PacketReader.DvbReader;
+import PacketReader.Field;
 
 public class Reader {
 	
@@ -46,11 +47,13 @@ public class Reader {
   public static int teletextpids[] = {};
   
   private static int packet = 0;
+  private static int currentPid = 0;
   
   public static boolean readPacket() {
 	  
 	  if(packet==0) {
-		  if(DvbReader.seekPid(teletextpids) == 0) {
+		  currentPid = DvbReader.seekPid(teletextpids);
+		  if(currentPid == 0) {
 			  return false;
 		  }	  
 	  }
@@ -73,15 +76,15 @@ public class Reader {
   public static boolean readPrefix() {
 	  
 	  if(DvbReader.getDataleft()!=183) {
-		  DvbReader.read(bufferStuff);
+		  Field.read(bufferStuff);
 	  }
 	  
 	  bufferData = new byte[DATA_SIZE];
-	  return DvbReader.read(bufferPrefix);
+	  return Field.read(bufferPrefix);
   }
   
   public static String getPrefixAsHex() {
-	  return DvbReader.byteBuffertoHex(bufferPrefix);
+	  return Field.byteBuffertoHex(bufferPrefix);
   }
   
   public static int getY() {
@@ -108,7 +111,7 @@ public class Reader {
   public static boolean readAddress() {
 	  assert(getY()==0);
 	  bufferData = new byte[DATA_SIZE - ADDRESS_SIZE];
-	  return DvbReader.read(bufferAddress);
+	  return Field.read(bufferAddress);
   }
   
   public static int getPageNumber() {
@@ -120,7 +123,7 @@ public class Reader {
   
   public static String getAddressAsHex() {
 	  assert(getY()==0);
-	  return DvbReader.byteBuffertoHex(bufferAddress);
+	  return Field.byteBuffertoHex(bufferAddress);
   }
   
   /**********************/
@@ -129,7 +132,7 @@ public class Reader {
   
   public static boolean readData() {
 	  assert(bufferData != null);
-	  return DvbReader.read(bufferData);
+	  return Field.read(bufferData);
   }
     
   public static String getDataAsText() {
@@ -139,5 +142,9 @@ public class Reader {
       }
       return result.toString();
   }
+
+public static int getCurrentPID() {
+	return currentPid;
+}
   
 }

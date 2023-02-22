@@ -2,6 +2,7 @@ package EPG;
 import java.io.IOException;
 
 import PacketReader.DvbReader;
+import PacketReader.Id;
 
 public class Reader {
 
@@ -92,7 +93,7 @@ public class Reader {
 
 		Reader.monitor = monitor;
 
-		assert(DvbReader.HEADER_SIZE + PAYLOADPOINTER_SIZE + FieldSection.BYTESIZE 
+		assert(Id.BYTESIZE + PAYLOADPOINTER_SIZE + FieldSection.BYTESIZE 
 				+ FieldEvent.BYTESIZE + DATA_SIZE == DvbReader.TS_PACKET_SIZE);
 
 		// TS loop
