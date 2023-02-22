@@ -2,9 +2,10 @@ package PacketReader;
 import java.nio.charset.StandardCharsets;
 
 /** Reads Transport Stream. */
-public class DvbReader {
+class DvbReader {
 		
 	final public static int TS_PACKET_SIZE = 188;	
+	
 	
 	// Payload pointer
 	
@@ -34,6 +35,7 @@ public class DvbReader {
 		}
 	}
 	
+	
 	//Payload 
 	
 	final public static int PAYLOAD_SIZE = TS_PACKET_SIZE - Id.BYTESIZE;
@@ -46,41 +48,5 @@ public class DvbReader {
 
 
 
-	//Data left
-	
-	private static int dataleft = 0;
-	  
-	/** Returns amount of data left in packet in bytes. */
-	public static int getDataleft() {
-		return dataleft;
-	}
-	
-	public static void reduceDataleft(int dl) {
-		dataleft -= dl;
-	}
-	
-	public static void resetLeft() {
-		dataleft = TS_PACKET_SIZE;
-	}
-
-	public static boolean readLeft() {
-		
-		if(dataleft==0) {
-			return true;
-		}
-		
-		assert(dataleft >= 0): "dataleft must be zero or positive, but dataleft = " + dataleft;
-		assert(dataleft < TS_PACKET_SIZE);
-		
-		byte[] left = new byte[dataleft];
-		boolean ok = Field.read(left);
-		
-		String s = new String(left, StandardCharsets.UTF_8);
-		//System.out.println((left[0]!=0xFF ? "" : "") 
-		//		+ s + "");
-		
-		return ok;
-		
-	}
 
 }

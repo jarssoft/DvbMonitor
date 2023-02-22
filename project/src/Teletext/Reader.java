@@ -1,9 +1,9 @@
 package Teletext;
 import PacketReader.SeekPID;
-import PacketReader.DvbReader;
+import PacketReader.DataLeft;
 import PacketReader.Field;
 
-public class Reader {
+class Reader {
 	
   private static boolean isAsciiPrintable(char ch) {
 	  
@@ -74,7 +74,7 @@ public class Reader {
   
   public static boolean readPrefix() {
 	  
-	  if(DvbReader.getDataleft()!=183) {
+	  if(DataLeft.getAmount()!=183) {
 		  Field.read(bufferStuff);
 	  }
 	  

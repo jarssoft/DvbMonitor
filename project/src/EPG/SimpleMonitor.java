@@ -2,7 +2,7 @@ package EPG;
 
 import java.time.format.DateTimeFormatter;
 
-public class SimpleMonitor implements Client {
+class SimpleMonitor implements Client {
 
 	boolean printOn = false;
 	String oldDate = "";
@@ -19,7 +19,6 @@ public class SimpleMonitor implements Client {
 	}
 
 	public void event() {
-
 		
 		if(printOn) {
 			String datestr = FieldEvent.getEventStart().format(DateTimeFormatter.ISO_LOCAL_DATE);

@@ -3,7 +3,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import PacketReader.SeekPID;
 
-public class SubtitleMonitor {
+class SubtitleMonitor {
 
 	public static class LineCache{
 		

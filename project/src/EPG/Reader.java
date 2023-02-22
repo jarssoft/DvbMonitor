@@ -1,17 +1,13 @@
 package EPG;
 import java.io.IOException;
 
-import PacketReader.DvbReader;
-import PacketReader.Id;
+import PacketReader.DataLeft;
 import PacketReader.SeekPID;
 
 public class Reader {
 
-	final private static int PAYLOADPOINTER_SIZE = 1;
-	
-	final private static int DATA_SIZE = DvbReader.PAYLOAD_SIZE - PAYLOADPOINTER_SIZE - FieldSection.BYTESIZE - FieldEvent.BYTESIZE;	
-
-	
+	final private static int PAYLOADPOINTER_SIZE = 1;	
+	//final private static int DATA_SIZE = DvbReader.PAYLOAD_SIZE - PAYLOADPOINTER_SIZE - FieldSection.BYTESIZE - FieldEvent.BYTESIZE;	
 
 	static Client monitor;
 
@@ -22,7 +18,7 @@ public class Reader {
 	public static boolean readFromPackets(byte[] buffer, int start) {
 
 		final int toRead = buffer.length - start;
-		final int packetDataLeft = DvbReader.getDataleft();
+		final int packetDataLeft = DataLeft.getAmount();
 		int readNow = Math.min(toRead, packetDataLeft);
 
 		//System.out.println("\n >readFromPackets(" + buffer.length + ", " + start + ", " + readNow + ")");
@@ -34,7 +30,7 @@ public class Reader {
 			assert(buffer.length > 0);
 
 			assert(System.in.read(buffer, start, readNow) == readNow) : "End of source!";		  
-			DvbReader.reduceDataleft(readNow);
+			DataLeft.reduce(readNow);
 
 			// If 0xFF read then there is stuffing and no buffer read in this packet
 			// (ETSI EN 300 468, 5.1.2)
@@ -44,7 +40,7 @@ public class Reader {
 				assert((buffer[start+readNow-1] & 0xFF) == 0xFF);
 
 				//Jump end of packet
-				assert(DvbReader.readLeft());
+				assert(DataLeft.readAll());
 
 				readNow=0;
 			}
@@ -59,7 +55,7 @@ public class Reader {
 		//Go to next packet
 		if(readNow < toRead) {
 
-			assert(DvbReader.getDataleft()==0) : "Whole packet not read.";
+			assert(DataLeft.getAmount()==0) : "Whole packet not read.";
 
 			//Changes the packet between reading.
 			assert(nextPacket()) : "Next packet not found!";
@@ -95,8 +91,8 @@ public class Reader {
 		PacketReader.SeekPID.setFilter(new int [] {0x12});
 		Reader.monitor = monitor;
 
-		assert(Id.BYTESIZE + PAYLOADPOINTER_SIZE + FieldSection.BYTESIZE 
-				+ FieldEvent.BYTESIZE + DATA_SIZE == DvbReader.TS_PACKET_SIZE);
+		//assert(Id.BYTESIZE + PAYLOADPOINTER_SIZE + FieldSection.BYTESIZE 
+		//		+ FieldEvent.BYTESIZE + DATA_SIZE == DvbReader.TS_PACKET_SIZE);
 
 		// TS loop
 		while (true) {

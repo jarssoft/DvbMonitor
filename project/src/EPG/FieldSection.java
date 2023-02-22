@@ -1,6 +1,5 @@
 package EPG;
-import PacketReader.DvbReader;
-import PacketReader.Id;
+import PacketReader.DataLeft;
 import PacketReader.SeekPID;
 
 class FieldSection {
@@ -30,7 +29,7 @@ class FieldSection {
 
 	public static int next() {
 
-		if(DvbReader.getDataleft()==0) {
+		if(DataLeft.getAmount()==0) {
 			SeekPID.nextPayloadStart();
 		}
 

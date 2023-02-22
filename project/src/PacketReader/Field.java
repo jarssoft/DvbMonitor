@@ -2,17 +2,18 @@ package PacketReader;
 
 import java.io.IOException;
 
+
 public class Field {
 	
 	/** Read byte-buffer. Return true if succeed, otherwise false. */
 	public static boolean read(byte[] buffer) {
 		
 		assert(buffer.length > 0): "buffer.length must be greater than zero, but buffer.length = " + buffer.length;
-		assert(buffer.length <= DvbReader.getDataleft()): "No enought data in this packet. getDataleft() = " + DvbReader.getDataleft();
+		assert(buffer.length <= DataLeft.getAmount()): "No enought data in this packet. getDataleft() = " + DataLeft.getAmount();
 		
 		try {
 			
-			DvbReader.reduceDataleft(buffer.length);
+			DataLeft.reduce(buffer.length);
 			
 			int readed=System.in.read(buffer);
 			//System.out.println(readed);

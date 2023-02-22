@@ -1,7 +1,7 @@
 package Teletext;
 import java.util.LinkedHashMap;
 
-public class ChangeMonitor {
+class ChangeMonitor {
 
 	public static int followedPackets[] = new int[1900];
 	private static int current_page[] = {0, 0};

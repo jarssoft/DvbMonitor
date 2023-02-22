@@ -1,6 +1,6 @@
 package PacketReader;
 
-public class Monitor {
+class Monitor {
 
 	/** Transport Stream Monitor */
 	public static void maind(String[] args) {
@@ -64,7 +64,7 @@ public class Monitor {
 					System.out.print(", payload:"+DvbReader.getPayloadPointer()+" ");
 				}
 								
-				if(DvbReader.readLeft()==false) {
+				if(DataLeft.readAll()==false) {
 				//if(read(bufferPayload)==false) {
 					return;
 				}

@@ -2,7 +2,7 @@ package Teletext;
 /**
 	Change of teletext line.
 */
-public class LineChange {
+class LineChange {
 
 	String content;	
 	int page;

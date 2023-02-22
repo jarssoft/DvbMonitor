@@ -2,7 +2,7 @@ package Teletext;
 
 import PacketReader.SeekPID;
 
-public class Monitor {
+class Monitor {
 	  
 	  public static void main(String[] args) {
 		  

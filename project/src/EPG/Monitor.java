@@ -1,7 +1,7 @@
 package EPG;
 import PacketReader.Field;
 
-public class Monitor implements Client {
+class Monitor implements Client {
 
 	public void section() {
 
