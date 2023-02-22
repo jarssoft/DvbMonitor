@@ -9,7 +9,7 @@ Extracts teletext and other stuff from MPEG Transport Stream in real time.
 - TODO: View thumbnails from video.
 - TODO: Listen audio only television.
 - TODO: Decode also adaptation fields.
-
+ 
 ## Installation
 
 DvbMonitor runs on Java Runtime Environment (at least OpenJDK 11 and 17) on the Linux system. To receive television signal as Transport Stream you need the device and software for tuning.
