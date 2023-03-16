@@ -25,7 +25,8 @@ class FieldEvent {
 		//assert(DvbReader.getDataleft()>=2);
 		//assert(readCRC());
 
-		assert(Reader.readFromPackets(buffer, 0));
+		Reader.readFromPackets(buffer, 0);
+		//assert();
 
 		//assert(SAFEMODE || (bufferEventHeader[2] & 0xFF) == 0xEA): "Error in EventHeader.";
 

@@ -29,7 +29,11 @@ public class Reader {
 			assert(start >= 0);
 			assert(buffer.length > 0);
 
-			assert(System.in.read(buffer, start, readNow) == readNow) : "End of source!";		  
+			int readed = System.in.readNBytes(buffer, start, readNow);
+			if(readed==-1) {
+				System.exit(0);
+			}
+			//assert( == readNow) : "End of source!";		  
 			DataLeft.reduce(readNow);
 
 			// If 0xFF read then there is stuffing and no buffer read in this packet
@@ -40,7 +44,8 @@ public class Reader {
 				assert((buffer[start+readNow-1] & 0xFF) == 0xFF);
 
 				//Jump end of packet
-				assert(DataLeft.readAll());
+				DataLeft.readAll();
+				//assert();
 
 				readNow=0;
 			}
@@ -58,7 +63,8 @@ public class Reader {
 			assert(DataLeft.getAmount()==0) : "Whole packet not read.";
 
 			//Changes the packet between reading.
-			assert(nextPacket()) : "Next packet not found!";
+			nextPacket();
+			//assert() : "Next packet not found!";
 
 			assert(start + readNow < buffer.length);
 			readFromPackets(buffer, start + readNow);
@@ -113,8 +119,9 @@ public class Reader {
 
 				// Iterate descriotors
 				while (eventLenght>0){
-
-					assert(readFromPackets(FieldDescriptorTL.buffer, 0 ));					  
+					
+					readFromPackets(FieldDescriptorTL.buffer, 0);
+					//assert();					  
 
 					int descLenght = FieldDescriptorTL.getLenght();
 
@@ -124,7 +131,8 @@ public class Reader {
 					eventLenght -= (FieldDescriptorTL.BYTESIZE + Descriptor.buffer.length);
 					section_length -= (FieldDescriptorTL.BYTESIZE + Descriptor.buffer.length);
 
-					assert(readBuffer(Descriptor.buffer));
+					readBuffer(Descriptor.buffer);
+					//assert();
 
 					// Print data of descriptor.
 
@@ -133,7 +141,8 @@ public class Reader {
 				}
 			} 
 
-			assert(FieldCRC.read());
+			FieldCRC.read();
+			//assert();
 
 		}
 	}

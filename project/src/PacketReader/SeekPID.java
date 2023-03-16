@@ -62,7 +62,8 @@ public class SeekPID {
 				//Read to end of packet
 				//assert(readLeft());
 				
-				assert(DvbReader.readPayload());
+				DvbReader.readPayload();
+				//assert();
 
 			}
 			

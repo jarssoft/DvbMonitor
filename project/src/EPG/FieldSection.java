@@ -35,7 +35,8 @@ class FieldSection {
 
 		//Read section
 
-		assert(Reader.readFromPackets(buffer, 0));
+		Reader.readFromPackets(buffer, 0);
+		//assert();
 
 		Reader.monitor.section();
 

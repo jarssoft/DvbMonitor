@@ -1,41 +1,57 @@
 # DvbMonitor
 
-Extracts teletext and other stuff from MPEG Trasport Stream binary data.
+Extracts teletext and other stuff from MPEG Transport Stream in real-time or from local files.
 
-- Teletext/Monitor: A simple teletext monitoring.
-- Teletext/SubtitleMonitor: Views teletext subtitles like a chat.
-- EPG/*: Decodes Event Information Table
-- TODO: View thumbnails from video
-- TODO: Audio only television
-
-## Installation
+- PacketReader.*: Reads common transport stream packets. Can be filtering by PID-value.
+- Teletext.*: A simple teletext decoder.
+- Teletext.SubtitleMonitor: Views teletext subtitles like a chat.
+- EPG.*: Decodes Event Information Table
+- TODO: View thumbnails from video.
+- TODO: Listen audio only television.
+- TODO: Decode also adaptation fields in TS-packets.
+ 
+## Installation and using
 
 DvbMonitor runs on Java Runtime Environment (at least OpenJDK 11 and 17) on the Linux system. To receive television signal as Transport Stream you need the device and software for tuning.
 
-## Using
+#### Tuning (optional)
+If you want to receive stream from aerial or cable broadcast, you need to make 'zapping'. Before it, scan channels. This example uses dvb-tools.
 
-Make 'zapping'. For example run the dvb-zap from dvb-tools. You need to use -P to get all PIDs of the stream. For example:
-
+<pre>
+dvbv5-scan /usr/local/share/dvb/scan/dvb-t/fi-Eurajoki -o channels-v5.conf
+</pre>
 <pre>
 dvbv5-zap -c channels-v5.conf 610000000 -P 
 </pre>
 
-Then use /dev/dvb/adapter0/dvr0 as standard input,
+You need to use -P to get all PIDs of the stream. Now, the dvb stream is located in /dev/dvb/adapter0/dvr0.
+
+#### Using DvbMonitor
+
+First, compile the java-files:
 
 <pre>
-cat /dev/dvb/adapter0/dvr0 |java -ea EPG/Monitor
+javac PacketReader/Monitor.java
 </pre>
 
-...or use [dvbsnoop](https://dvbsnoop.sourceforge.net/) to get only one PID,
+If you are receive stream in real-time, pipe the streamfile to program.
 
 <pre>
-dvbsnoop -s ts -b 0x12 |java -ea EPG/Monitor
+cat /dev/dvb/adapter0/dvr0 |java PacketReader.Monitor
 </pre>
 
-...or give it an example transport stream from file:
+On using slow hardware, the stream can overflows. Use [dvbsnoop](https://dvbsnoop.sourceforge.net/) to filter PIDS and make the processing faster:
 
 <pre>
-cat ../test.ts |java -ea EPG/Monitor
+dvbsnoop -s ts -b 0x12 |java EPG.Monitor
+</pre>
+
+(*PIDS defines content of packets, like video or teletext. 0x12 stands for event information table.)
+
+To read local file:
+
+<pre>
+cat ../test.ts |java PacketReader.Monitor
 </pre>
 
 ## SubtitleMonitor

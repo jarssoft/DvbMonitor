@@ -4,8 +4,7 @@ import java.nio.charset.StandardCharsets;
 /** Reads Transport Stream. */
 class DvbReader {
 		
-	final public static int TS_PACKET_SIZE = 188;	
-	
+	final public static int TS_PACKET_SIZE = 188;		
 	
 	// Payload pointer
 	
@@ -18,7 +17,8 @@ class DvbReader {
 	}
 	
 	public static void readPayloadPointer() {
-		assert(Field.read(bufferPayloadPointer));
+		Field.read(bufferPayloadPointer);
+		//assert();
 	}
 	
 	public static void toPayloadStart() {
@@ -27,7 +27,8 @@ class DvbReader {
 		if(Id.containsNewUnit()) {
 			if(getPayloadPointer()>0) {
 				byte hopp[] = new byte[getPayloadPointer()];
-				assert(Field.read(hopp));		  
+				Field.read(hopp);
+				//assert();		  
 	
 				String s = new String(hopp, StandardCharsets.UTF_8);
 				System.out.println(s);

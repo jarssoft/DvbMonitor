@@ -1,9 +1,12 @@
 package PacketReader;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 
 public class Field {
+	
+	static public InputStream input = System.in;
 	
 	/** Read byte-buffer. Return true if succeed, otherwise false. */
 	public static boolean read(byte[] buffer) {
@@ -15,15 +18,18 @@ public class Field {
 			
 			DataLeft.reduce(buffer.length);
 			
-			int readed=System.in.read(buffer);
+			int readed = input.read(buffer);
 			//System.out.println(readed);
 			//buffer = System.in.readNBytes(buffer.length);
 			//assert(readed==buffer.length):"Only "+readed+" read. Must read "+buffer.length;
 			if(readed<buffer.length) {
 				//System.out.println("Only "+readed+" readed.");
-				  assert(readed>=0) : "End of data!";
+				assert(readed>=0) : "End of data!";
+				if(readed==-1) {
+					System.exit(0);
+				}
 				  
-				int second = System.in.read(buffer, readed, buffer.length-readed);
+				int second = input.read(buffer, readed, buffer.length-readed);
 				//System.out.println("Second try: "+second);
 				readed+=second;
 				//System.out.println("Together "+readed+" readed.");
